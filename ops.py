@@ -18,12 +18,19 @@ class WaveLetPooling(Layer):
 
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
+        input_shape = inputs.shape
+        if self.upsample:
+            output_shape = (input_shape[0], input_shape[1] * 2,
+                    input_shape[2] * 2, input_shape[3])
+
+        output_shape = (input_shape[0], input_shape[1]//2,
+                input_shape[2]//2, input_shape[3])
 
         if self.upsample:
-            return [tf.nn.conv2d_transpose(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
-                    tf.nn.conv2d_transpose(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
-                    tf.nn.conv2d_transpose(inputs, self.HL, strides=[1, 2, 2, 1], padding='SAME'),
-                    tf.nn.conv2d_transpose(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME')]
+            return [tf.nn.conv2d_transpose(inputs, self.LL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+                    tf.nn.conv2d_transpose(inputs, self.LH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+                    tf.nn.conv2d_transpose(inputs, self.HL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+                    tf.nn.conv2d_transpose(inputs, self.HH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME')]
 
         return [tf.nn.conv2d(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
