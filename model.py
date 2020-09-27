@@ -83,13 +83,18 @@ class WCT2:
 
         # ======= Deocoder ======= #
 
-        for layer in VGG_LAYERS[::-1]:
-            x = self.conv_block(x, 512, kernel_size)
+        for layer in VGG_LAYERS[::-1][:-1]:
+            x = self.conv_block(
+                x,
+                vgg_model.get_layer(layer).output_shape[-1],
+                kernel_size)
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x, *_ = WaveLetPooling(upsample=True)(x)
 
-        return Model(inputs=img, outputs=x, name='wct')
+        out = self.conv_block(x, 3, kernel_size, 'linear')
+
+        return Model(inputs=img, outputs=out, name='wct')
 
 
     @staticmethod

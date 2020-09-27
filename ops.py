@@ -27,7 +27,6 @@ class WaveLetPooling(Layer):
             output_shape = (1, input_shape[1]//2,
                             input_shape[2]//2, input_shape[3])
 
-        print(output_shape  )
         if self.upsample:
             return [tf.nn.conv2d_transpose(inputs, self.LL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
                     tf.nn.conv2d_transpose(inputs, self.LH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
