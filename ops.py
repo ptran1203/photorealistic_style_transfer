@@ -18,7 +18,7 @@ class WaveLetPooling(Layer):
 
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
-        input_shape = inputs.shape
+        input_shape = K.int_shape(inputs)
         if self.upsample:
             output_shape = (input_shape[0], input_shape[1] * 2,
                     input_shape[2] * 2, input_shape[3])
