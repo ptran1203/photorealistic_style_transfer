@@ -8,7 +8,7 @@ class WaveLetPooling(Layer):
     def __init__(self, upsample=False):
         super(WaveLetPooling, self).__init__()
         self.upsample = upsample
-        square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.int32))
+        square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.int32),
             tf.math.multiply(square_of_2, tf.constant([[1, 1]], dtype=tf.int32))
