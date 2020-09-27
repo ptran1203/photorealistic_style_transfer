@@ -7,11 +7,11 @@ import utils
 import keras.backend as K
 
 from keras.layers.convolutional import Conv2D
-from keras.layers import Input, Activation, Layer, UpSampling2D
+from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
-from keras.applications.vgg16 import VGG16
+from ops import WaveLetPooling
 
 try:
     # In case run on google colab
@@ -19,11 +19,14 @@ try:
 except ImportError:
     from cv2 import imshow as cv2_imshow
 
-DEFAULT_STYLE_LAYERS = [
-    'block1_conv1', 'block2_conv1',
-    'block3_conv1', 'block4_conv1',
+
+VGG_LAYERS = [
+    'block1_conv1', 'block1_conv2',
+    'block2_conv1', 'block2_conv2',
+    'block3_conv1', 'block3_conv2',
+    'block3_conv3', 'block3_conv4',
+    'block4_conv1',
 ]
-DEFAULT_LAST_LAYER = 'block4_conv1'
 
 
 class Reduction(Layer):
@@ -35,129 +38,58 @@ class Reduction(Layer):
 
 class WCT2:
     def __init__(self, base_dir, rst, lr,
-                style_layer_names=DEFAULT_STYLE_LAYERS,
-                last_layer=DEFAULT_LAST_LAYER,
                 show_interval=25,
-                style_loss_weight=1,
-                pre_trained_model='vgg16'):
+                style_loss_weight=1):
         self.base_dir = base_dir
         self.rst = rst
-        self.pre_trained_model = pre_trained_model
         self.lr = lr
-        self.style_layer_names = style_layer_names
-        self.last_layer = last_layer
         self.show_interval = show_interval
-        img_shape = (self.rst, self.rst, 3)
+        self.img_shape = (self.rst, self.rst, 3)
 
-        # ===== Build the model ===== #
-        self.encoder = self.build_encoder()
-        self.style_layers = self.build_style_layers()
-        content_img = Input(shape=img_shape)
-        style_img = Input(shape=img_shape)
-
-        content_feat = self.encoder(content_img)
-        style_feat = self.encoder(style_img)
-
-        combined_feat = AdaptiveInstanceNorm()([content_feat, style_feat])
-        self.init_rst = K.int_shape(combined_feat)[1]
-        self.decoder = self.build_decoder((self.init_rst, self.init_rst, 512))
-
-        gen_img = self.decoder(combined_feat)
-        gen_feat = self.encoder(gen_img)
-
-        self.transfer_model = Model(inputs=[content_img, style_img],
-                                    outputs=gen_img)
-        content_loss = K.mean(K.square(combined_feat - gen_feat), axis=[1, 2])
-        self.transfer_model.add_loss(Reduction()(content_loss))
-        self.transfer_model.add_loss(style_loss_weight*self.compute_style_loss(gen_img, style_img))
-        self.transfer_model.compile(optimizer=Adam(self.lr),
-                                    loss=["mse"],
-                                    loss_weights=[0.0])
-
-
-    def compute_style_loss(self, gen_img, style_img):
-        gen_feats = self.style_layers(gen_img)
-        style_feats = self.style_layers(style_img)
-        style_loss = []
-        axis = [1, 2]
-        for i in range(len(style_feats)):
-            gmean = K.mean(gen_feats[i], axis=axis)
-            gstd = K.std(gen_feats[i], axis=axis)
-
-            smean = K.mean(style_feats[i], axis=axis)
-            sstd = K.std(style_feats[i], axis=axis)
-
-            style_loss.append(
-                K.sum(K.square(gmean - smean)) +
-                K.sum(K.square(gstd - sstd))
-            )
-
-        return Reduction()(style_loss)
-
-
-    def build_style_layers(self):
-        return Model(
-            inputs=self.encoder.inputs,
-            outputs=[self.encoder.get_layer(l).get_output_at(0) \
-                for l in self.style_layer_names]
-        )
-
-
-    def build_encoder(self):
-        input_shape = (self.rst, self.rst, 3)
-        vggnet = VGG16 if self.pre_trained_model == 'vgg16' else VGG19
-        model = vggnet(
-            include_top=False,
-            weights='imagenet',
-            input_tensor=Input(input_shape),
-            input_shape=input_shape,
-        )
-        print('Encoder: {}'.format(model.name))
-        model.trainable = False
-        for layer in model.layers:
-            layer.trainable = False
-
-        return Model(
-            inputs=model.inputs,
-            outputs=model.get_layer(self.last_layer).get_output_at(0)
-        )
-
+        self.wct = build_wct_model()
 
     def conv_block(self, x, filters, kernel_size,
-                    activation='relu', up_sampling=False):
+                    activation='relu'):
 
         x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                     padding='same', activation=activation)(x)
-
-        if up_sampling:
-            x = UpSampling2D(size=(2, 2), interpolation='nearest')(x)
-
         return x
 
 
-    def build_decoder(self, input_shape):
-        feat = Input(input_shape)
+    def build_wct_model(self):
+        images = Input(self.img_shape)
         kernel_size = 3
+        skips = []
 
-        x = self.conv_block(feat, 512, kernel_size=kernel_size, up_sampling=True)
+        vgg_model = VGG19(include_top=False,
+                         weights='imagenet',
+                         input_tensor=Input(self.img_shape),
+                         input_shape=self.img_shape)
 
-        x = self.conv_block(x, 256, kernel_size=kernel_size)
-        x = self.conv_block(x, 256, kernel_size=kernel_size)
-        x = self.conv_block(x, 256, kernel_size=kernel_size)
-        x = self.conv_block(x, 256, kernel_size=kernel_size, up_sampling=True)
+        vgg_model.trainable = False
+        for layer in vgg_model.layers:
+            layer.trainable = False
 
-        # x = self.conv_block(x, 128, kernel_size=kernel_size)
-        # x = self.conv_block(x, 128, kernel_size=kernel_size)
-        x = self.conv_block(x, 128, kernel_size=kernel_size)
-        x = self.conv_block(x, 128, kernel_size=kernel_size, up_sampling=True)
+        img = Input(input_shape)
 
-        x = self.conv_block(x, 64, kernel_size=kernel_size)
-        x = self.conv_block(x, 64, kernel_size=kernel_size)
+        # ======= Encoder ======= #
+        x = model.get_layer(VGG_LAYERS[0])(img)
+        for layer in VGG_LAYERS[1:]:
+            x = model.get_layer(layer)(x)
 
-        style_image = self.conv_block(x, 3, kernel_size=kernel_size, activation='linear')
+            if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
+                x, *skip= WaveLetPooling()(x)
+                skips.append(Concatenate()(skip))
 
-        model = Model(inputs=feat, outputs=style_image, name='decoder')
-        return model
+        # ======= Deocoder ======= #
+
+        for layer in VGG_LAYERS[::-1]
+        x = self.conv_block(x, 512, kernel_size)
+
+        if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
+            x, *_ = WaveLetPooling(upsample=True)(x)
+
+        return Model(inputs=img, outputs=x, name='wct')
 
 
     @staticmethod

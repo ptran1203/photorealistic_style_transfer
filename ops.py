@@ -7,8 +7,8 @@ class WaveLetPooling(Layer):
     def __init__(self, upsample=False):
         super(WaveLetPooling, self).__init__()
         self.upsample = upsample
-        L = 1 / np.sqrt(2) * np.array([[1, 1]], dtype=np.float32)
-        H = 1 / np.sqrt(2) * np.array([[-1, 1]], dtype=np.float32)
+        L = 1 / np.sqrt(2) * np.array([[1, 1]])
+        H = 1 / np.sqrt(2) * np.array([[-1, 1]])
 
         self.LL = (np.transpose(L) * L).reshape((1, 2, 2, 1))
         self.LH = (np.transpose(L) * H).reshape((1, 2, 2, 1))
@@ -18,25 +18,34 @@ class WaveLetPooling(Layer):
 
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
-        print(self.LL.shape)
+
         if self.upsample:
-            return (tf.nn.conv2d_transpose(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
+            return [tf.nn.conv2d_transpose(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
                     tf.nn.conv2d_transpose(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
                     tf.nn.conv2d_transpose(inputs, self.HL, strides=[1, 2, 2, 1], padding='SAME'),
-                    tf.nn.conv2d_transpose(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME'))
+                    tf.nn.conv2d_transpose(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME')]
 
-
-        return (tf.nn.conv2d(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
+        return [tf.nn.conv2d(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.HL, strides=[1, 2, 2, 1], padding='SAME'),
-                tf.nn.conv2d(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME'))
+                tf.nn.conv2d(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME')]
 
+
+    def compute_output_shape(self, input_shape):
+        if self.upsample:
+            shape = (input_shape[0], input_shape[1] * 2,
+                    input_shape[2] * 2, input_shape[3])
+
+        shape = (input_shape[0], input_shape[1]//2,
+                input_shape[2]//2, input_shape[3])
+        
+        return [shape, shape, shape, shape]
 
     def repeat_filters(self, repeats):
-        self.LL = np.transpose(np.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
-        self.LH = np.transpose(np.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
-        self.HL = np.transpose(np.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
-        self.HH = np.transpose(np.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        self.LL = tf.constant(np.transpose(np.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
+        self.LH = tf.constant(np.transpose(np.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
+        self.HL = tf.constant(np.transpose(np.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
+        self.HH = tf.constant(np.transpose(np.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
 
 
 def WhiteningAndColoring(Layer):
