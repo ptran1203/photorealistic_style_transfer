@@ -10,12 +10,12 @@ class WaveLetPooling(Layer):
         self.upsample = upsample
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
-            tf.constant(1, dtype=tf.int32),
-            tf.math.multiply(square_of_2, tf.constant([[1, 1]], dtype=tf.int32))
+            tf.constant(1, dtype=tf.float32),
+            tf.math.multiply(square_of_2, tf.constant([[1, 1]], dtype=tf.float32))
         )
         H = tf.math.divide(
-            tf.constant(1, dtype=tf.int32),
-            tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.int32))
+            tf.constant(1, dtype=tf.float32),
+            tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.float32))
         )
 
         self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L), (1, 2, 2, 1))
@@ -101,8 +101,8 @@ def WhiteningAndColoring(Layer):
             Ss, Us, _ = tf.svd(fsfs)
 
         # Filter small singular values
-        k_c = tf.reduce_sum(tf.cast(tf.greater(Sc, 1e-5), tf.int32))
-        k_s = tf.reduce_sum(tf.cast(tf.greater(Ss, 1e-5), tf.int32))
+        k_c = tf.reduce_sum(tf.cast(tf.greater(Sc, 1e-5), tf.float32))
+        k_s = tf.reduce_sum(tf.cast(tf.greater(Ss, 1e-5), tf.float32))
 
         # Whiten content feature
         Dc = tf.diag(tf.pow(Sc[:k_c], -0.5))
