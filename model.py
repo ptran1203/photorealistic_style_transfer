@@ -70,7 +70,7 @@ class WCT2:
         for layer in vgg_model.layers:
             layer.trainable = False
 
-        img = Input(input_shape)
+        img = Input(self.img_shape)
 
         # ======= Encoder ======= #
         x = model.get_layer(VGG_LAYERS[0])(img)
