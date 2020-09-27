@@ -18,10 +18,10 @@ class WaveLetPooling(Layer):
             tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.int32))
         )
 
-        self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L)), (1, 2, 2, 1))
-        self.LH = tf.reshape(tf.math.multiply(tf.transpose(L), H)), (1, 2, 2, 1))
-        self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L)), (1, 2, 2, 1))
-        self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H)), (1, 2, 2, 1))
+        self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L), (1, 2, 2, 1))
+        self.LH = tf.reshape(tf.math.multiply(tf.transpose(L), H), (1, 2, 2, 1))
+        self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
+        self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
 
 
     def call(self, inputs):
