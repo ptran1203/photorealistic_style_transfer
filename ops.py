@@ -118,3 +118,9 @@ def WhiteningAndColoring(Layer):
 
         return blended
 
+class Reduction(Layer):
+    def __init__(self):
+        super(Reduction, self).__init__()
+
+    def call(self, inputs):
+        return tf.reduce_sum(inputs)

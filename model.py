@@ -11,7 +11,7 @@ from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
-from ops import WaveLetPooling
+from ops import WaveLetPooling, Reduction, WhiteningAndColoring
 
 try:
     # In case run on google colab
@@ -27,14 +27,6 @@ VGG_LAYERS = [
     'block3_conv3', 'block3_conv4',
     'block4_conv1',
 ]
-
-
-class Reduction(Layer):
-    def __init__(self):
-        super(Reduction, self).__init__()
-
-    def call(self, inputs):
-        return tf.reduce_sum(inputs)
 
 class WCT2:
     def __init__(self, base_dir, rst, lr,
@@ -81,8 +73,8 @@ class WCT2:
                 x, *skip= WaveLetPooling()(x)
                 skips.append(Concatenate()(skip))
 
-        # ======= Deocoder ======= #
-
+        self.encoder = Model(inputs=img, outputs=x, name='encoder')
+        # ======= Decoder ======= #
         for layer in VGG_LAYERS[::-1][:-1]:
             x = self.conv_block(
                 x,
@@ -94,7 +86,17 @@ class WCT2:
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
-        return Model(inputs=img, outputs=out, name='wct')
+        self.wct = Model(inputs=img, outputs=out, name='wct')
+
+        # ======= Loss functions ======= #
+        recontruct_img = self.wtc(img)
+        feat = self.encoder(img)
+        gen_feat = self.encoder(recontruct_img)
+
+        # L2 recontruction loss
+        l2_loss = K.mean(K.square(feat - gen_feat), axis=[1, 2])
+        self.wct.add_loss(Reduction()(l2_loss))
+        self.wct.compile(optimizers=Adam(self.lr), loss='mse')
 
 
     @staticmethod
@@ -105,7 +107,7 @@ class WCT2:
         }
 
 
-    def train(self, data_gen, epochs, augment_factor=0):
+    def train(self, data_gen, epochs):
         history = self.init_hist()
         print("Train on {} samples".format(len(data_gen.x)))
 
@@ -114,9 +116,8 @@ class WCT2:
             print("Train epochs {}/{} - ".format(e + 1, epochs), end="")
 
             batch_loss = self.init_hist()
-            for content_img, style_img in data_gen.next_batch(augment_factor):
-                loss = self.transfer_model.train_on_batch([content_img, style_img],
-                                                          style_img)
+            for content_img in data_gen.next_batch():
+                loss = self.wct.train_on_batch(content_img, content_img)
                 batch_loss['loss'].append(loss)
 
             # evaluate
@@ -134,11 +135,11 @@ class WCT2:
             ))
 
             if e % self.show_interval == 0:
-                self.save_weight()
+                # self.save_weight()
                 idx = np.random.randint(0, data_gen.max_size - 1)
-                cimg, simg = data_gen.x[idx:idx+1], data_gen.y[idx:idx+1]
-                gen_img = self.generate(cimg, simg)
-                data_gen.show_imgs(np.concatenate([cimg, simg, gen_img]))
+                img = data_gen.x[idx:idx+1]
+                gen_img = self.generate(img)
+                data_gen.show_imgs(np.concatenate([img, gen_img]))
 
         self.history = history
         return history
@@ -156,20 +157,20 @@ class WCT2:
 
     def save_weight(self):
         try:
-            self.transfer_model.save_weights(self.base_dir + '/transfer_model.h5')
+            self.wct.save_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
             print("Could not load model, {}".format(str(e))) 
 
 
     def load_weight(self):
         try:
-            self.transfer_model.load_weights(self.base_dir + '/transfer_model.h5')
+            self.wct.load_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
             print("Save model failed, {}".format(str(e))) 
 
 
     def generate(self, content_imgs, style_imgs):
-        return self.transfer_model.predict([content_imgs, style_imgs])
+        return self.wct.predict([content_imgs, style_imgs])
 
 
     def show_sample(self, content_img, style_img,
