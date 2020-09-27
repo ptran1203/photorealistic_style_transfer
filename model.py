@@ -73,9 +73,9 @@ class WCT2:
         img = Input(self.img_shape)
 
         # ======= Encoder ======= #
-        x = model.get_layer(VGG_LAYERS[0])(img)
+        x = vgg_model.get_layer(VGG_LAYERS[0])(img)
         for layer in VGG_LAYERS[1:]:
-            x = model.get_layer(layer)(x)
+            x = vgg_model.get_layer(layer)(x)
 
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
                 x, *skip= WaveLetPooling()(x)
