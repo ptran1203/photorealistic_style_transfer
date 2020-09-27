@@ -89,7 +89,7 @@ class WCT2:
         self.wct = Model(inputs=img, outputs=out, name='wct')
 
         # ======= Loss functions ======= #
-        recontruct_img = self.wtc(img)
+        recontruct_img = self.wct(img)
         feat = self.encoder(img)
         gen_feat = self.encoder(recontruct_img)
 
