@@ -58,10 +58,10 @@ class WaveLetPooling(Layer):
         return [shape, shape, shape, shape]
 
     def repeat_filters(self, repeats):
-        self.LL = tf.constant(np.transpose(np.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
-        self.LH = tf.constant(np.transpose(np.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
-        self.HL = tf.constant(np.transpose(np.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
-        self.HH = tf.constant(np.transpose(np.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0)), tf.float32)
+        self.LL = np.transpose(np.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = np.transpose(np.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = np.transpose(np.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = np.transpose(np.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 
 def WhiteningAndColoring(Layer):
