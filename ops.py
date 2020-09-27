@@ -8,13 +8,20 @@ class WaveLetPooling(Layer):
     def __init__(self, upsample=False):
         super(WaveLetPooling, self).__init__()
         self.upsample = upsample
-        L = 1 / np.sqrt(2) * np.array([[1, 1]])
-        H = 1 / np.sqrt(2) * np.array([[-1, 1]])
+        square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.int32))
+        L = tf.math.divide(
+            tf.constant(1, dtype=tf.int32),
+            tf.math.multiply(square_of_2, tf.constant([[1, 1]], dtype=tf.int32))
+        )
+        H = tf.math.divide(
+            tf.constant(1, dtype=tf.int32),
+            tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.int32))
+        )
 
-        self.LL = (np.transpose(L) * L).reshape((1, 2, 2, 1))
-        self.LH = (np.transpose(L) * H).reshape((1, 2, 2, 1))
-        self.HL = (np.transpose(H) * L).reshape((1, 2, 2, 1))
-        self.HH = (np.transpose(H) * H).reshape((1, 2, 2, 1))
+        self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L)), (1, 2, 2, 1))
+        self.LH = tf.reshape(tf.math.multiply(tf.transpose(L), H)), (1, 2, 2, 1))
+        self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L)), (1, 2, 2, 1))
+        self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H)), (1, 2, 2, 1))
 
 
     def call(self, inputs):
