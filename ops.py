@@ -54,14 +54,14 @@ class WaveLetPooling(Layer):
         else:
             shape = (input_shape[0], input_shape[1]//2,
                     input_shape[2]//2, input_shape[3])
-        
+
         return [shape, shape, shape, shape]
 
     def repeat_filters(self, repeats):
-        self.LL = np.transpose(np.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
-        self.LH = np.transpose(np.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
-        self.HL = np.transpose(np.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
-        self.HH = np.transpose(np.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 
 def WhiteningAndColoring(Layer):
