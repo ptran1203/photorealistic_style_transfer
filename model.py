@@ -94,14 +94,12 @@ class WCT2:
                 kernel_size)
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
-                x = Concatenate()([x] + skips[skip_id])
-                x = WaveLetPooling(upsample=True)(x)
+                x = WaveLetUnPooling()(skips[skip_id] + [x])
                 skip_id -= 1
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
-        self.wct.summary()
 
 
     @staticmethod

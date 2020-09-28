@@ -5,9 +5,8 @@ import tensorflow as tf
 import numpy as np
 
 class WaveLetPooling(Layer):
-    def __init__(self, upsample=False):
+    def __init__(self):
         super(WaveLetPooling, self).__init__()
-        self.upsample = upsample
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -23,29 +22,64 @@ class WaveLetPooling(Layer):
         self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
         self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
 
-        print(self.LL)
-
 
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
-        input_shape = K.int_shape(inputs)
-        if self.upsample:
-            output_shape = (1, input_shape[1] * 2,
-                            input_shape[2] * 2, input_shape[3])
-        else:
-            output_shape = (1, input_shape[1]//2,
-                            input_shape[2]//2, input_shape[3])
-
-        if self.upsample:
-            return tf.nn.conv2d_transpose(inputs, self.LL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME')
-                    # tf.nn.conv2d_transpose(inputs, self.LH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
-                    # tf.nn.conv2d_transpose(inputs, self.HL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
-                    # tf.nn.conv2d_transpose(inputs, self.HH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME')]
 
         return [tf.nn.conv2d(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.HL, strides=[1, 2, 2, 1], padding='SAME'),
                 tf.nn.conv2d(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME')]
+
+
+    def compute_output_shape(self, input_shape):
+        shape = (input_shape[0], input_shape[1]//2,
+                input_shape[2]//2, input_shape[3])
+
+        return [shape, shape, shape, shape]
+
+
+    def repeat_filters(self, repeats):
+        self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+
+
+class WaveLetUnPooling(Layer):
+    def __init__(self):
+        super(WaveLetPooling, self).__init__()
+        square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
+        L = tf.math.divide(
+            tf.constant(1, dtype=tf.float32),
+            tf.math.multiply(square_of_2, tf.constant([[1, 1]], dtype=tf.float32))
+        )
+        H = tf.math.divide(
+            tf.constant(1, dtype=tf.float32),
+            tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.float32))
+        )
+
+        self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L), (1, 2, 2, 1))
+        self.LH = tf.reshape(tf.math.multiply(tf.transpose(L), H), (1, 2, 2, 1))
+        self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
+        self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
+
+
+    def call(self, inputs):
+        LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
+        self.repeat_filters(LL_in.shape[-1])
+
+        input_shape = K.int_shape(LL_in)
+        output_shape = (1, input_shape[1] * 2,
+                        input_shape[2] * , input_shape[3])
+
+        return tf.concat([
+            tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(LH_in, self.LH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(HL_in, self.HL, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(HH_in, self.HH, output_shape=output_shape, strides=[1, 2, 2, 1], padding='SAME'),
+            tensor_in,
+        ], axis=1)
 
 
     def compute_output_shape(self, input_shape):
@@ -64,7 +98,6 @@ class WaveLetPooling(Layer):
         self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
         self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
         self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
-
 
 def WhiteningAndColoring(Layer):
     def __init__(self):
