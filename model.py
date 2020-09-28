@@ -40,12 +40,6 @@ class WCT2:
         img = Input(self.img_shape)
 
         self.build_wct_model()
-
-        self.encoder = Model(inputs=self.wct.inputs,
-                             outputs=self.wct.get_layer('block4_conv1').get_output_at(0),
-                             name='encoder')
-        self.encoder.summary()
-
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
         gen_feat = self.encoder(recontruct_img)
@@ -73,6 +67,10 @@ class WCT2:
         vgg_model.trainable = False
         for layer in vgg_model.layers:
             layer.trainable = False
+
+        self.encoder = Model(inputs=vgg_model.inputs,
+                            outputs=vgg_model.get_layer('block4_conv1').get_output_at(0),
+                            name='encoder')
 
         img = Input(self.img_shape)
 
@@ -122,7 +120,8 @@ class WCT2:
 
             batch_loss = self.init_hist()
             for content_img in data_gen.next_batch():
-                loss = self.wct.train_on_batch(content_img, content_img)
+                feat = self.encoder.predict(content_img, verbose=False)
+                loss, *_ = self.trainer.train_on_batch(content_img, [content_img, feat])
                 batch_loss['loss'].append(loss)
 
             # evaluate
