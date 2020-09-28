@@ -88,6 +88,7 @@ class WCT2:
 
         # ======= Decoder ======= #
         skip_id = 2
+        print(skips)
         for layer in VGG_LAYERS[::-1][:-1]:
             x = self.conv_block(
                 x,
