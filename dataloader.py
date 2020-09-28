@@ -14,9 +14,7 @@ class DataGenerator:
         BATCH_FILES = 4
         self.base_dir = base_dir
         self.batch_size = batch_size
-        self.id = 1
         self.rst = rst
-        self.multi_batch = multi_batch
         self.normalize = normalize
         self.max_size = max_size
         self.preprocessing = preprocessing
