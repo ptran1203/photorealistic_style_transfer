@@ -18,9 +18,6 @@ class WaveLetPooling(Layer):
             tf.math.multiply(square_of_2, tf.constant([[-1, 1]], dtype=tf.float32))
         )
 
-        print(L)
-        print(H)
-
         self.LL = tf.reshape(tf.math.multiply(tf.transpose(L), L), (1, 2, 2, 1))
         self.LH = tf.reshape(tf.math.multiply(tf.transpose(L), H), (1, 2, 2, 1))
         self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
@@ -32,7 +29,6 @@ class WaveLetPooling(Layer):
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
         input_shape = K.int_shape(inputs)
-        print(self.LL)
         if self.upsample:
             output_shape = (1, input_shape[1] * 2,
                             input_shape[2] * 2, input_shape[3])

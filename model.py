@@ -75,6 +75,7 @@ class WCT2:
                 skips.append(Concatenate()(skip))
 
         self.encoder = Model(inputs=img, outputs=x, name='encoder')
+        self.encoder.summary()
         # ======= Decoder ======= #
         for layer in VGG_LAYERS[::-1][:-1]:
             x = self.conv_block(
@@ -88,6 +89,8 @@ class WCT2:
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
+
+        self.wct.summary()
 
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
