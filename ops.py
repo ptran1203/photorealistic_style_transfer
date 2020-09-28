@@ -83,10 +83,10 @@ class WaveLetUnPooling(Layer):
 
 
     def compute_output_shape(self, input_shape):
-        input_shape = input_shape[0]
-        shape = (input_shape[0], input_shape[1] * 2,
-                input_shape[2] * 2, input_shape[3])
-        print("SHAPE: ", shape, input_shape)
+        _ip_shape = input_shape[0]
+        shape = (_ip_shape[0], _ip_shape[1] * 2,
+                _ip_shape[2] * 2, _ip_shape[3])
+        print("SHAPE: ", shape, _ip_shape)
         return shape
 
 
