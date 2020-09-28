@@ -37,10 +37,21 @@ class WCT2:
         self.lr = lr
         self.show_interval = show_interval
         self.img_shape = (self.rst, self.rst, 3)
+        img = Input(self.img_shape)
 
         self.build_wct_model()
 
+        self.encoder = Model(inputs=self.wct.inputs,
+                             outputs=self.wct.get_layer('block4_conv1').get_output_at(0),
+                             name='encoder')
+        self.encoder.summary()
 
+        # ======= Loss functions ======= #
+        recontruct_img = self.wct(img)
+        gen_feat = self.encoder(recontruct_img)
+
+        self.trainer = Model(inputs=img, outputs=[recontruct_img, gen_feat], name="trainer")
+        self.trainer.compile(optimizers=Adam(self.lr), loss=["mse", "mse"])
     def conv_block(self, x, filters, kernel_size,
                     activation='relu'):
 
@@ -88,24 +99,6 @@ class WCT2:
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
         self.wct.summary()
-
-        print(self.wct.get_layer('block4_conv1'))
-        print(self.wct.get_layer('block4_conv1').get_output_at(0))
-
-        self.encoder = Model(inputs=self.wct.inputs,
-                             outputs=self.wct.get_layer('block4_conv1').get_output_at(0),
-                             name='encoder')
-        self.encoder.summary()
-
-        # ======= Loss functions ======= #
-        recontruct_img = self.wct(img)
-        feat = self.encoder(img)
-        gen_feat = self.encoder(recontruct_img)
-
-        # L2 recontruction loss
-        l2_loss = K.mean(K.square(feat - gen_feat), axis=[1, 2])
-        self.wct.add_loss(Reduction()(l2_loss))
-        self.wct.compile(optimizers=Adam(self.lr), loss='mse')
 
 
     @staticmethod
