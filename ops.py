@@ -48,7 +48,7 @@ class WaveLetPooling(Layer):
 
 class WaveLetUnPooling(Layer):
     def __init__(self):
-        super(WaveLetPooling, self).__init__()
+        super(WaveLetUnPooling, self).__init__()
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
