@@ -11,7 +11,7 @@ from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Ad
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
-from ops import WaveLetPooling, Reduction, WhiteningAndColoring
+from ops import WaveLetPooling, WaveLetUnPooling, Reduction, WhiteningAndColoring
 
 try:
     # In case run on google colab
