@@ -87,16 +87,16 @@ class WCT2:
                 skips[-1] += skip
 
         # ======= Decoder ======= #
-        skip_id = 2
+        skip_id = 0
         for layer in VGG_LAYERS[::-1][:-1]:
-            x = self.conv_block(
-                x,
-                vgg_model.get_layer(layer).output_shape[-1] // 2,
-                kernel_size)
+            filters = vgg_model.get_layer(layer).output_shape[-1] // 2
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
+                x = self.conv_block(x, filters * 5, kernel_size)
                 x = WaveLetUnPooling()(skips[skip_id] + [x])
-                skip_id -= 1
+                skip_id += 1
+            else:
+                x = self.conv_block(x, filters, kernel_size)
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
