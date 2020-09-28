@@ -83,7 +83,7 @@ class WCT2:
 
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
                 x, *skip= WaveLetPooling()(x)
-                skips.append([skip])
+                skips.append(skip)
 
         # ======= Decoder ======= #
         skip_id = 2
