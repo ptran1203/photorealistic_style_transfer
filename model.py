@@ -89,7 +89,7 @@ class WCT2:
         # ======= Decoder ======= #
         skip_id = 2
         for layer in VGG_LAYERS[::-1][:-1]:
-            filters = vgg_model.get_layer(layer).output_shape[-1] // 2
+            filters = vgg_model.get_layer(layer).output_shape[-1]
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = self.conv_block(x, filters, kernel_size)
