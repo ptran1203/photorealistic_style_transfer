@@ -38,7 +38,8 @@ class WCT2:
         self.show_interval = show_interval
         self.img_shape = (self.rst, self.rst, 3)
 
-        self.wct = self.build_wct_model()
+        self.build_wct_model()
+
 
     def conv_block(self, x, filters, kernel_size,
                     activation='relu'):
