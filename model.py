@@ -90,7 +90,7 @@ class WCT2:
         self.wct.summary()
 
         self.encoder = Model(inputs=self.wct.inputs,
-                             outputs=self.wc.get_layer('block4_conv1').get_output_at(0),
+                             outputs=self.wct.get_layer('block4_conv1').get_output_at(0),
                              name='encoder')
         self.encoder.summary()
 
