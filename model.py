@@ -7,7 +7,7 @@ import utils
 import keras.backend as K
 
 from keras.layers.convolutional import Conv2D
-from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate
+from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add
 from keras.models import Model
 from keras.optimizers import Adam
 from keras.applications.vgg19 import VGG19
@@ -95,7 +95,7 @@ class WCT2:
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = WaveLetPooling(upsample=True)(x)
-                x = Concatenate()([x, skips[skip_id]])
+                x = Add()([x, skips[skip_id]])
                 skip_id -= 1
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
