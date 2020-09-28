@@ -122,7 +122,7 @@ class WCT2:
 
             batch_loss = self.init_hist()
             for content_img in data_gen.next_batch():
-                feat = self.encoder.predict(content_img, verbose=False)
+                feat = self.encoder.predict(content_img)
                 loss, *_ = self.trainer.train_on_batch(content_img, [content_img, feat])
                 batch_loss['loss'].append(loss)
 
