@@ -40,7 +40,7 @@ class DataGenerator:
         for start_idx in range(0, max_id, self.batch_size):
             access_pattern = indices[start_idx:start_idx + self.batch_size]
 
-            yield x[access_pattern, ...],
+            yield x[access_pattern, ...]
 
 
     def get_random_sample(self, test=True):
