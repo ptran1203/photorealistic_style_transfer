@@ -83,15 +83,10 @@ class WaveLetUnPooling(Layer):
 
 
     def compute_output_shape(self, input_shape):
-        if self.upsample:
-            shape = (input_shape[0], input_shape[1] * 2,
-                    input_shape[2] * 2, input_shape[3])
-
-        else:
-            shape = (input_shape[0], input_shape[1]//2,
-                    input_shape[2]//2, input_shape[3])
-
+        shape = (input_shape[0], input_shape[1] * 2,
+                input_shape[2] * 2, input_shape[3])
         return [shape, shape, shape, shape]
+
 
     def repeat_filters(self, repeats):
         self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
