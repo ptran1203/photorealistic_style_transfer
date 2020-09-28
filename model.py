@@ -90,16 +90,17 @@ class WCT2:
         skip_id = 2
         for layer in VGG_LAYERS[::-1][:-1]:
             filters = vgg_model.get_layer(layer).output_shape[-1]
-            print(layer)
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = self.conv_block(x, filters // 2, kernel_size)
                 original, lh, hl, hh = skips[skip_id]
                 x = WaveLetUnPooling()([x, lh, hl, hh, original])
-                print(x)
                 skip_id -= 1
             else:
                 x = self.conv_block(x, filters, kernel_size)
+
+            print(layer)
+            print(x)
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
