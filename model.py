@@ -89,6 +89,9 @@ class WCT2:
         self.wct = Model(inputs=img, outputs=out, name='wct')
         self.wct.summary()
 
+        print(self.wct.get_layer('block4_conv1'))
+        print(self.wct.get_layer('block4_conv1').get_output_at(0))
+
         self.encoder = Model(inputs=self.wct.inputs,
                              outputs=self.wct.get_layer('block4_conv1').get_output_at(0),
                              name='encoder')
