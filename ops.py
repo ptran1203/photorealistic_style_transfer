@@ -85,8 +85,8 @@ class WaveLetUnPooling(Layer):
     def compute_output_shape(self, input_shape):
         shape = (input_shape[0], input_shape[1] * 2,
                 input_shape[2] * 2, input_shape[3])
-        print("SHAPE: ", shape)
-        return [shape, shape, shape, shape]
+        print("SHAPE: ", shape, input_shape)
+        return shape
 
 
     def repeat_filters(self, repeats):
