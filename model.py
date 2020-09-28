@@ -99,9 +99,6 @@ class WCT2:
             else:
                 x = self.conv_block(x, filters, kernel_size)
 
-            print(layer)
-            print(x)
-
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
