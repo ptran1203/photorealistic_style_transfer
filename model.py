@@ -86,7 +86,7 @@ class WCT2:
                 skips.append(Concatenate()(skip))
 
         # ======= Decoder ======= #
-        skip_id = 0
+        skip_id = 2
         for layer in VGG_LAYERS[::-1][:-1]:
             x = self.conv_block(
                 x,
@@ -96,7 +96,7 @@ class WCT2:
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = WaveLetPooling(upsample=True)(x)
                 x = Concatenate()([x, skips[skip_id]])
-                skip_id += 1
+                skip_id -= 1
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
