@@ -94,9 +94,7 @@ class WCT2:
                 kernel_size)
 
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
-                to_add = [x] + [skips[skip_id]]
-                print(to_add)
-                x = Add()(to_add)
+                x = Concatenate()([x] + skips[skip_id])
                 x = WaveLetPooling(upsample=True)(x)
                 skip_id -= 1
 
