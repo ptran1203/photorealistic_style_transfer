@@ -72,15 +72,13 @@ class WaveLetUnPooling(keras.layers.Layer):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
         self.repeat_filters(LL_in.shape[-1])
 
-        batch_size, h, w, c = tf.shape(tensor_in)
-
         print("-----------------")
         print(LL_in)
         print(HL_in)
         print(self.HL)
         print(tensor_in)
 
-        out_shape = tf.pack([batch_size, h, w, c])
+        out_shape = tf.shape(tensor_in)
 
         return tf.concat([
             _conv2d_transpose(LL_in, self.LL, output_shape=out_shape, name='conv2d_transpose_wave_{}_1'.format(self._name)),
