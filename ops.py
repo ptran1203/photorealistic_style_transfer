@@ -24,27 +24,27 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
 
     def call(self, inputs):
-        self.repeat_filters(inputs.shape[-1])
-        print("conv2d input", inputs)
-        return [_conv2d(inputs, self.LL, name="conv2d_wave_{}_1".format(self._name)),
-                _conv2d(inputs, self.LH, name="conv2d_wave_{}_2".format(self._name)),
-                _conv2d(inputs, self.HL, name="conv2d_wave_{}_3".format(self._name)),
-                _conv2d(inputs, self.HH, name="conv2d_wave_{}_4".format(self._name))]
+        LL, LH, HL, HH = self.repeat_filters(inputs.shape[-1])
+        return [_conv2d(inputs, LL, name="conv2d_wave_{}_1".format(self._name)),
+                _conv2d(inputs, LH, name="conv2d_wave_{}_2".format(self._name)),
+                _conv2d(inputs, HL, name="conv2d_wave_{}_3".format(self._name)),
+                _conv2d(inputs, HH, name="conv2d_wave_{}_4".format(self._name))]
 
 
     def compute_output_shape(self, input_shape):
         shape = (input_shape[0], input_shape[1]//2,
                 input_shape[2]//2, input_shape[3])
 
-        print("Conv2d shape", shape)
         return [shape, shape, shape, shape]
 
 
     def repeat_filters(self, repeats):
-        self.LL = tf.reshape(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
-        self.LH = tf.reshape(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
-        self.HL = tf.reshape(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
-        self.HH = tf.reshape(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        return [
+            tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        ]
 
 
 class WaveLetUnPooling(tf.keras.layers.Layer):
@@ -69,7 +69,7 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
 
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
-        self.repeat_filters(LL_in.shape[-1])
+        LL, LH, HL, HH = self.repeat_filters(LL_in.shape[-1])
 
         print("-----------------")
         print(LL_in)
@@ -80,10 +80,10 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
         out_shape = tf.shape(tensor_in)
 
         return tf.concat([
-            _conv2d_transpose(LL_in, self.LL, output_shape=out_shape, name='conv2d_transpose_wave_{}_1'.format(self._name)),
-            _conv2d_transpose(LH_in, self.LH, output_shape=out_shape, name='conv2d_transpose_wave_{}_2'.format(self._name)),
-            _conv2d_transpose(HL_in, self.HL, output_shape=out_shape, name='conv2d_transpose_wave_{}_3'.format(self._name)),
-            _conv2d_transpose(HH_in, self.HH, output_shape=out_shape, name='conv2d_transpose_wave_{}_4'.format(self._name)),
+            _conv2d_transpose(LL_in, LL, output_shape=out_shape, name='conv2d_transpose_wave_{}_1'.format(self._name)),
+            _conv2d_transpose(LH_in, LH, output_shape=out_shape, name='conv2d_transpose_wave_{}_2'.format(self._name)),
+            _conv2d_transpose(HL_in, HL, output_shape=out_shape, name='conv2d_transpose_wave_{}_3'.format(self._name)),
+            _conv2d_transpose(HH_in, HH, output_shape=out_shape, name='conv2d_transpose_wave_{}_4'.format(self._name)),
             tensor_in,
         ], axis=-1)
 
@@ -97,16 +97,16 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
             sum(ips[3] for ips in input_shape)
         )
 
-        print("compute shape: ",shape)
-
         return shape
 
 
     def repeat_filters(self, repeats):
-        self.LL = tf.reshape(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
-        self.LH = tf.reshape(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
-        self.HL = tf.reshape(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
-        self.HH = tf.reshape(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        return [
+            tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0)),
+            tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0)),
+        ]
 
 class WhiteningAndColoring(tf.keras.layers.Layer):
     def __init__(self):
