@@ -1,16 +1,14 @@
 import tensorflow as tf
-import keras
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 import utils
-import keras.backend as K
 
-from keras.layers.convolutional import Conv2D
-from keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add
-from keras.models import Model
-from keras.optimizers import Adam
-from keras.applications.vgg19 import VGG19
+from tensorflow.keras.layers.convolutional import Conv2D
+from tensorflow.keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.applications.vgg19 import VGG19
 from ops import WaveLetPooling, WaveLetUnPooling, Reduction, WhiteningAndColoring
 
 try:
