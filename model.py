@@ -151,7 +151,7 @@ class WCT2:
                 # self.save_weight()
                 idx = np.random.randint(0, data_gen.max_size - 1)
                 img = data_gen.x[idx:idx+1]
-                gen_img = self.generate(img)
+                gen_img = self.wct.predict(img)
                 data_gen.show_imgs(np.concatenate([img, gen_img]))
 
         self.history = history
