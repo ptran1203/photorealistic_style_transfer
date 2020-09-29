@@ -77,11 +77,13 @@ class WaveLetUnPooling(Layer):
         print(self.HL)
         print(tensor_in)
 
+        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape, initializer=tf.random_normal_initializer(stddev=stddev))
+
         return tf.concat([
-            tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='VALID'),
-            tf.nn.conv2d_transpose(LH_in, self.LH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='VALID'),
-            tf.nn.conv2d_transpose(HL_in, self.HL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='VALID'),
-            tf.nn.conv2d_transpose(HH_in, self.HH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='VALID'),
+            tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(LH_in, self.LH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(HL_in, self.HL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
+            tf.nn.conv2d_transpose(HH_in, self.HH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
             tensor_in,
         ], axis=-1)
 
