@@ -37,12 +37,10 @@ class WCT2:
         img = Input(self.img_shape)
         self.wct = self.build_wct_model()
         # ======= Loss functions ======= #
-        self.wct.summary()
-        return
         recontruct_img = self.wct(img)
-        # feat = self.encoder(img)
+        feat = self.encoder(recontruct_img)
 
-        self.trainer = Model(inputs=[img], outputs=[recontruct_img], name="trainer")
+        self.trainer = Model(inputs=[img], outputs=[recontruct_img, feat], name="trainer")
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse",])
 
 
@@ -63,7 +61,6 @@ class WCT2:
                          weights='imagenet',
                          input_tensor=Input(self.img_shape),
                          input_shape=self.img_shape)
-        vgg_model.summary()
 
         vgg_model.trainable = False
         for layer in vgg_model.layers:
@@ -135,7 +132,7 @@ class WCT2:
             batch_loss = self.init_hist()
             for content_img in data_gen.next_batch():
                 feat = self.encoder.predict(content_img)
-                loss, *_ = self.trainer.train_on_batch([content_img], [content_img])
+                loss, *_ = self.trainer.train_on_batch([content_img], [content_img,feat])
                 batch_loss['loss'].append(loss)
 
             # evaluate

@@ -70,13 +70,6 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
         LL, LH, HL, HH = self.repeat_filters(LL_in.shape[-1])
-
-        print("-----------------")
-        print(LL_in)
-        print(HL_in)
-        print(self.HL)
-        print(tensor_in)
-
         out_shape = tf.shape(tensor_in)
 
         return tf.concat([
