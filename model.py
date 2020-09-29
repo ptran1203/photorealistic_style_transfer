@@ -79,9 +79,10 @@ class WCT2:
             x = vgg_model.get_layer(layer)(x)
 
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
-                skips.append([x])
-                x, *skip= WaveLetPooling(layer)(x)
-                skips[-1] += skip
+                to_append = [x]
+                x, lh, hl, hh= WaveLetPooling(layer)(x)
+                to_append += [lh, hl, hh]
+                skips.append(to_append)
 
         # ======= Decoder ======= #
         skip_id = 2
