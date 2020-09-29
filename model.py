@@ -38,6 +38,7 @@ class WCT2:
         self.wct = self.build_wct_model()
         # ======= Loss functions ======= #
         self.wct.summary()
+        return
         recontruct_img = self.wct(img)
         # feat = self.encoder(img)
 
