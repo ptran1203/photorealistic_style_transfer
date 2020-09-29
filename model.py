@@ -92,7 +92,7 @@ class WCT2:
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = self.conv_block(x, filters // 2, kernel_size)
                 original, lh, hl, hh = skips[skip_id]
-                x = WaveLetUnPooling()([x, lh, hl, hh, original], hh.shape)
+                x = WaveLetUnPooling(hh.shape)([x, lh, hl, hh, original])
                 skip_id -= 1
             else:
                 x = self.conv_block(x, filters, kernel_size)
