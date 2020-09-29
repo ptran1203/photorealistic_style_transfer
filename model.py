@@ -76,8 +76,9 @@ class WCT2:
         # ======= Encoder ======= #
         x = vgg_model.get_layer(VGG_LAYERS[0])(img)
         for layer in VGG_LAYERS[1:]:
-            x = vgg_model.get_layer(layer)(x)
-
+            origin_layer = vgg_model.get_layer(layer)
+            filters = origin_layer.output_shape[-1]
+            x = self.conv_block(x, filters, kernel_size, name=origin_layer.name + "_encode")
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
                 to_append = [x]
                 x, lh, hl, hh= WaveLetPooling(layer)(x)
@@ -88,7 +89,7 @@ class WCT2:
         skip_id = 2
         for layer in VGG_LAYERS[::-1][:-1]:
             filters = vgg_model.get_layer(layer).output_shape[-1]
-            name = layer + "_clone"
+            name = layer + "_decode"
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = self.conv_block(x, filters // 2, kernel_size, name=name)
                 original, lh, hl, hh = skips[skip_id]
@@ -107,6 +108,10 @@ class WCT2:
             # dont train waveletpooling layers
             if "wave" in layer.name:
                 layer.trainable = False
+
+            if "_encode" in layer.name:
+                name = layer.name.replace("_encode", "")
+                layer.set_weights(vgg_model.get_layer(name).get_weights())
 
         return wct
 
