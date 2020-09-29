@@ -40,6 +40,7 @@ class WCT2:
         img = Input(self.img_shape)
 
         self.wct = self.build_wct_model()
+        print(self.wct.predict(np.random.rand(10, 256, 256, 3)))
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
         gen_feat = self.encoder(recontruct_img)
@@ -75,65 +76,27 @@ class WCT2:
                             name='encoder')
 
         # ======= Encoder ======= #
-        # x = vgg_model.get_layer(VGG_LAYERS[0])(img)
-        # for layer in VGG_LAYERS[1:]:
-        #     x = vgg_model.get_layer(layer)(x)
-
-        #     if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
-        #         skips.append([x])
-        #         x, *skip= WaveLetPooling()(x)
-        #         skips[-1] += skip
-
         x = vgg_model.get_layer(VGG_LAYERS[0])(img)
-        x = vgg_model.get_layer(VGG_LAYERS[1])(x)
-        skips.append([x])
-        x, *skip= WaveLetPooling()(x)
-        skips[-1] += skip
-        x = vgg_model.get_layer(VGG_LAYERS[2])(x)
-        x = vgg_model.get_layer(VGG_LAYERS[3])(x)
-        skips.append([x])
-        x, *skip= WaveLetPooling()(x)
-        skips[-1] += skip
-        x = vgg_model.get_layer(VGG_LAYERS[4])(x)
-        x = vgg_model.get_layer(VGG_LAYERS[5])(x)
-        x = vgg_model.get_layer(VGG_LAYERS[6])(x)
-        x = vgg_model.get_layer(VGG_LAYERS[7])(x)
-        skips.append([x])
-        x, *skip= WaveLetPooling()(x)
-        skips[-1] += skip
-        x = vgg_model.get_layer(VGG_LAYERS[8])(x)
+        for layer in VGG_LAYERS[1:]:
+            x = vgg_model.get_layer(layer)(x)
+
+            if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
+                skips.append([x])
+                x, *skip= WaveLetPooling()(x)
+                skips[-1] += skip
 
         # ======= Decoder ======= #
-        # skip_id = 2
-        # for layer in VGG_LAYERS[::-1][:-1]:
-        #     filters = vgg_model.get_layer(layer).output_shape[-1]
+        skip_id = 2
+        for layer in VGG_LAYERS[::-1][:-1]:
+            filters = vgg_model.get_layer(layer).output_shape[-1]
 
-        #     if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
-        #         x = self.conv_block(x, filters // 2, kernel_size)
-        #         original, lh, hl, hh = skips[skip_id]
-        #         x = WaveLetUnPooling()([x, lh, hl, hh, original])
-        #         skip_id -= 1
-        #     else:
-        #         x = self.conv_block(x, filters, kernel_size)
-
-        x = self.conv_block(x, 256, kernel_size)
-        original, lh, hl, hh = skips[2]
-        x = WaveLetUnPooling()([x, lh, hl, hh, original])
-
-        x = self.conv_block(x, 256, kernel_size)
-        x = self.conv_block(x, 256, kernel_size)
-        x = self.conv_block(x, 256, kernel_size)
-        x = self.conv_block(x, 256, kernel_size)
-
-        x = self.conv_block(x, 128, kernel_size)
-        original, lh, hl, hh = skips[1]
-        x = WaveLetUnPooling()([x, lh, hl, hh, original])
-
-        x = self.conv_block(x, 128, kernel_size)
-        x = self.conv_block(x, 64, kernel_size)
-        original, lh, hl, hh = skips[0]
-        x = WaveLetUnPooling()([x, lh, hl, hh, original])
-        x = self.conv_block(x, 64, kernel_size)
+            if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
+                x = self.conv_block(x, filters // 2, kernel_size)
+                original, lh, hl, hh = skips[skip_id]
+                x = WaveLetUnPooling()([x, lh, hl, hh, original])
+                skip_id -= 1
+            else:
+                x = self.conv_block(x, filters, kernel_size)
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
