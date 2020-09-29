@@ -103,6 +103,11 @@ class WCT2:
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
 
+        for layer in self.wct.layers:
+            # dont train waveletpooling layers
+            if "wave" in layer.name:
+                layer.trainable = False
+
 
     @staticmethod
     def init_hist():
