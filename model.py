@@ -43,6 +43,7 @@ class WCT2:
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
         gen_feat = self.encoder(recontruct_img)
+        _ = self.wct(recontruct_img)
 
         self.trainer = Model(inputs=img, outputs=[recontruct_img, gen_feat], name="trainer")
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse", "mse"])
