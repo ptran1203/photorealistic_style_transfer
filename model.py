@@ -47,8 +47,8 @@ class WCT2:
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse",])
 
 
-    def conv_block(self, x, filters, kernel_size, name,
-                    activation='relu'):
+    def conv_block(self, x, filters, kernel_size,
+                    activation='relu', name=""):
 
         x = Conv2D(filters, kernel_size=kernel_size, strides=1,
                     padding='same', activation=activation, name=name)(x)
