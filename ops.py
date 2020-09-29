@@ -41,10 +41,10 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
 
     def repeat_filters(self, repeats):
-        self.LL = tf.repeat(self.LL, repeats, axis=0)
-        self.LH = tf.repeat(self.LH, repeats, axis=0)
-        self.HL = tf.repeat(self.HL, repeats, axis=0)
-        self.HH = tf.repeat(self.HH, repeats, axis=0)
+        self.LL = tf.reshape(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = tf.reshape(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = tf.reshape(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = tf.reshape(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 
 class WaveLetUnPooling(tf.keras.layers.Layer):
@@ -103,10 +103,10 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
 
 
     def repeat_filters(self, repeats):
-        self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
-        self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
-        self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
-        self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
+        self.LL = tf.reshape(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = tf.reshape(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = tf.reshape(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = tf.reshape(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 class WhiteningAndColoring(tf.keras.layers.Layer):
     def __init__(self):
