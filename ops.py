@@ -182,3 +182,16 @@ def _conv2d_transpose(x, kernel, output_shape, name):
 def _conv2d(x, kernel, name):
     conv = tf.nn.conv2d(x, kernel, strides=[1, 2, 2, 1], padding='SAME')
     return conv
+
+
+def get_predict_function(model, in_layer, out_layers=[]):
+    if not out_layers:
+        out_layers = [in_layer]
+
+    return tf.keras.backend.function(
+        [model.get_layer(in_layer).inputs],
+        [
+            model.get_layer(out_layer).get_output_at(-1) \
+                for out_layer in out_layers
+        ]
+    )

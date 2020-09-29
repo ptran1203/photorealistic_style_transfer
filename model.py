@@ -4,11 +4,16 @@ import datetime
 import matplotlib.pyplot as plt
 import utils
 
-from tensorflow.keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add, Conv2D
+from tensorflow.keras.layers import (
+    Input, Activation, Layer,
+    UpSampling2D, Concatenate,
+    Add, Conv2D)
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications.vgg19 import VGG19
-from ops import WaveLetPooling, WaveLetUnPooling, Reduction, WhiteningAndColoring
+from ops import (
+    WaveLetPooling, WaveLetUnPooling, Reduction,
+    WhiteningAndColoring, get_predict_function)
 
 try:
     # In case run on google colab
@@ -42,6 +47,8 @@ class WCT2:
 
         self.trainer = Model(inputs=[img], outputs=[recontruct_img, feat], name="trainer")
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse",])
+
+        
 
 
     def conv_block(self, x, filters, kernel_size,
@@ -99,8 +106,6 @@ class WCT2:
 
         wct = Model(inputs=img, outputs=out, name='wct')
 
-        print("Build WCT model -> Done")
-
         for layer in wct.layers:
             # dont train waveletpooling layers
             if "_encode" in layer.name:
@@ -155,7 +160,6 @@ class WCT2:
                 data_gen.show_imgs(np.concatenate([img, gen_img]))
 
         self.history = history
-        return history
 
 
     def plot_history(self):
@@ -179,7 +183,37 @@ class WCT2:
         try:
             self.wct.load_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
-            print("Save model failed, {}".format(str(e))) 
+            print("Save model failed, {}".format(str(e)))
+
+
+    def transfer(self, content_img, style_img):
+        # step 1.
+        content_feat, style_feat = self.en_1([content_img]), self.en_1([style_img])
+        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        # step 2.
+        content_feat, c_skips = self.pool_1([content_feat])
+        style_feat, s_skips = self.pool_1([style_feat])
+        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        # step 3.
+        
+
+
+
+    def init_transfer_sequence(self):
+        # ===== encoder layers ===== #
+        self.en_1 = get_predict_function(self.wct, 'block1_conv1')
+        self.pool_1 = get_predict_function(self.wct, 'block1_conv2_encode', ['block1_conv2', 'block2_conv1_encode'])
+        self.pool_2 = get_predict_function(self.wct, 'block2_conv2_encode', ['block2_conv2', 'block3_conv1_encode'])
+        self.pool_3 = get_predict_function(self.wct, 'block3_conv2_encode', ['block3_conv4', 'block4_conv1_decode'])
+
+        # ===== decoder layers ===== #
+        self.de_1 = get_predict_function(self.wct, 'block4_conv1_decode')
+        self.unpool_1 = get_predict_function(self.wct, 'block4_conv1', 'block3_conv2_decode')
+        self.de_2 = get_predict_function(self.wct, 'block3_conv1_decode')
+        self.unpool_2 = get_predict_function(self.wct, 'block3_conv1', 'block2_conv2_decode')
+        self.de_3 = get_predict_function(self.wct, 'block2_conv1_decode')
+        self.unpool_3 = get_predict_function(self.wct, 'block2_conv1', 'block1_conv2_decode')
+        self.final = get_predict_function(self.wct, 'output')
 
 
     def generate(self, content_imgs, style_imgs):
