@@ -103,12 +103,10 @@ class WCT2:
 
         for layer in wct.layers:
             # dont train waveletpooling layers
-            if layer.name in VGG_LAYERS:
-                layer.trainable = False
-
             if "_encode" in layer.name:
                 name = layer.name.replace("_encode", "")
                 layer.set_weights(vgg_model.get_layer(name).get_weights())
+                layer.trainable=False
 
         return wct
 
