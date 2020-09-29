@@ -69,8 +69,7 @@ class WaveLetUnPooling(keras.layers.Layer):
 
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
-        self.repeat_filters()
-        print(self.init_shape)
+        self.repeat_filters(LL_in.shape[-1])
 
         print("-----------------")
         print(LL_in)
@@ -101,8 +100,7 @@ class WaveLetUnPooling(keras.layers.Layer):
         return shape
 
 
-    def repeat_filters(self):
-        repeats = self.init_shape[-1]
+    def repeat_filters(self, repeats):
         self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
         self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
         self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
