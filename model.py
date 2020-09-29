@@ -40,9 +40,8 @@ class WCT2:
         img = Input(self.img_shape)
 
         self.wct = self.build_wct_model()
-        print(self.wct.predict(np.random.rand(10, 256, 256, 3)))
         # ======= Loss functions ======= #
-        recontruct_img = self.wct(img)
+        recontruct_img = self.wct([img])
         gen_feat = self.encoder(recontruct_img)
 
         self.trainer = Model(inputs=img, outputs=[recontruct_img, gen_feat], name="trainer")
