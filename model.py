@@ -44,7 +44,7 @@ class WCT2:
         # feat = self.encoder(img)
 
         self.trainer = Model(inputs=[img], outputs=[recontruct_img], name="trainer")
-        self.trainer.compile(optimizer=Adam(self.lr), loss=["mse", "mse"])
+        self.trainer.compile(optimizer=Adam(self.lr), loss=["mse",])
 
 
     def conv_block(self, x, filters, kernel_size,
