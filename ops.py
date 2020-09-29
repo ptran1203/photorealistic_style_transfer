@@ -96,6 +96,8 @@ class WaveLetUnPooling(keras.layers.Layer):
             sum(ips[3] for ips in input_shape)
         )
 
+        print("compute shape: ",shape)
+
         return shape
 
 
