@@ -116,6 +116,25 @@ class WCT2:
             else:
                 x = self.conv_block(x, filters, kernel_size)
 
+        x = self.conv_block(x, 256, kernel_size)
+        original, lh, hl, hh = skips[2]
+        x = WaveLetUnPooling()([x, lh, hl, hh, original])
+
+        x = self.conv_block(x, 256, kernel_size)
+        x = self.conv_block(x, 256, kernel_size)
+        x = self.conv_block(x, 256, kernel_size)
+        x = self.conv_block(x, 256, kernel_size)
+
+        x = self.conv_block(x, 128, kernel_size)
+        original, lh, hl, hh = skips[1]
+        x = WaveLetUnPooling()([x, lh, hl, hh, original])
+
+        x = self.conv_block(x, 128, kernel_size)
+        x = self.conv_block(x, 64, kernel_size)
+        original, lh, hl, hh = skips[0]
+        x = WaveLetUnPooling()([x, lh, hl, hh, original])
+        x = self.conv_block(x, 64, kernel_size)
+
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
         wct = Model(inputs=img, outputs=out, name='wct')
