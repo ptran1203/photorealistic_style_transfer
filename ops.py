@@ -77,7 +77,7 @@ class WaveLetUnPooling(Layer):
         print(self.HL)
         print(tensor_in)
 
-        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape, initializer=tf.random_normal_initializer(stddev=stddev))
+        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape, initializer=tf.random_normal_initializer())
 
         return tf.concat([
             tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
