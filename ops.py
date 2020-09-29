@@ -26,7 +26,7 @@ class WaveLetPooling(keras.layers.Layer):
 
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
-
+        print("conv2d input", inputs)
         return [_conv2d(inputs, self.LL, name="conv2d_wave_{}_1".format(self._name)),
                 _conv2d(inputs, self.LH, name="conv2d_wave_{}_2".format(self._name)),
                 _conv2d(inputs, self.HL, name="conv2d_wave_{}_3".format(self._name)),
