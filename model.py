@@ -75,14 +75,33 @@ class WCT2:
                             name='encoder')
 
         # ======= Encoder ======= #
-        x = vgg_model.get_layer(VGG_LAYERS[0])(img)
-        for layer in VGG_LAYERS[1:]:
-            x = vgg_model.get_layer(layer)(x)
+        # x = vgg_model.get_layer(VGG_LAYERS[0])(img)
+        # for layer in VGG_LAYERS[1:]:
+        #     x = vgg_model.get_layer(layer)(x)
 
-            if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
-                skips.append([x])
-                x, *skip= WaveLetPooling()(x)
-                skips[-1] += skip
+        #     if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
+        #         skips.append([x])
+        #         x, *skip= WaveLetPooling()(x)
+        #         skips[-1] += skip
+
+        x = vgg_model.get_layer(VGG_LAYERS[0])(img)
+        x = vgg_model.get_layer(VGG_LAYERS[1])(x)
+        skips.append([x])
+        x, *skip= WaveLetPooling()(x)
+        skips[-1] += skip
+        x = vgg_model.get_layer(VGG_LAYERS[2])(x)
+        x = vgg_model.get_layer(VGG_LAYERS[3])(x)
+        skips.append([x])
+        x, *skip= WaveLetPooling()(x)
+        skips[-1] += skip
+        x = vgg_model.get_layer(VGG_LAYERS[4])(x)
+        x = vgg_model.get_layer(VGG_LAYERS[5])(x)
+        x = vgg_model.get_layer(VGG_LAYERS[6])(x)
+        x = vgg_model.get_layer(VGG_LAYERS[7])(x)
+        skips.append([x])
+        x, *skip= WaveLetPooling()(x)
+        skips[-1] += skip
+        x = vgg_model.get_layer(VGG_LAYERS[8])(x)
 
         # ======= Decoder ======= #
         skip_id = 2
