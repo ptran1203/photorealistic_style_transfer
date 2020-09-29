@@ -179,16 +179,14 @@ class Reduction(keras.layers.Layer):
 
 
 def _conv2d_transpose(x, kernel, output_shape, name):
-    with tf.variable_scope(name):
-        conv = tf.nn.conv2d_transpose(
-                x, kernel,
-                output_shape=output_shape,
-                strides=[1, 2, 2, 1],
-                padding='SAME')
-        return conv
+    conv = tf.nn.conv2d_transpose(
+            x, kernel,
+            output_shape=output_shape,
+            strides=[1, 2, 2, 1],
+            padding='SAME')
+    return conv
 
 
 def _conv2d(x, kernel, name):
-    with tf.variable_scope(name):
-        conv = tf.nn.conv2d(x, kernel, strides=[1, 2, 2, 1], padding='SAME')
-        return conv
+    conv = tf.nn.conv2d(x, kernel, strides=[1, 2, 2, 1], padding='SAME')
+    return conv
