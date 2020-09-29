@@ -77,7 +77,7 @@ class WaveLetUnPooling(keras.layers.Layer):
         print(self.HL)
         print(tensor_in)
 
-        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape)
+        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', LL_in.shape)
 
         return tf.concat([
             _conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), name='conv2d_transpose_wave_{}_1'.format(self._name)),
