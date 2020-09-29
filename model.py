@@ -60,7 +60,7 @@ class WCT2:
 
 
     def build_wct_model(self):
-        img = Input(self.img_shape)
+        img = Input(self.img_shape, name='in_img')
         kernel_size = 3
         skips = []
 
@@ -195,8 +195,6 @@ class WCT2:
         style_feat, s_skips = self.pool_1([style_feat])
         content_feat = WhiteningAndColoring()([content_feat, style_feat])
         # step 3.
-        
-
 
 
     def init_transfer_sequence(self):
@@ -214,6 +212,8 @@ class WCT2:
         self.de_3 = get_predict_function(self.wct, 'block2_conv1_decode')
         self.unpool_3 = get_predict_function(self.wct, 'block2_conv1', 'block1_conv2_decode')
         self.final = get_predict_function(self.wct, 'output')
+
+        
 
 
     def generate(self, content_imgs, style_imgs):
