@@ -47,8 +47,9 @@ class WaveLetPooling(Layer):
 
 
 class WaveLetUnPooling(Layer):
-    def __init__(self):
+    def __init__(self, init_shape):
         super(WaveLetUnPooling, self).__init__()
+        self.init_shape = init_shape
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -67,14 +68,7 @@ class WaveLetUnPooling(Layer):
 
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
-        self.repeat_filters([
-            LL_in.shape[-1], LH_in.shape[-1],
-            HL_in.shape[-1], HH_in.shape[-1],
-        ])
-
-        input_shape = K.int_shape(LL_in)
-        output_shape = (1, input_shape[1] * 2,
-                        input_shape[2] * 2, input_shape[3])
+        self.repeat_filters()
 
         print("-----------------")
         print(LL_in)
@@ -107,11 +101,12 @@ class WaveLetUnPooling(Layer):
         return shape
 
 
-    def repeat_filters(self, repeats):
-        self.LL = tf.transpose(tf.repeat(self.LL, repeats[0], axis=0), (1, 2, 3, 0))
-        self.LH = tf.transpose(tf.repeat(self.LH, repeats[1], axis=0), (1, 2, 3, 0))
-        self.HL = tf.transpose(tf.repeat(self.HL, repeats[2], axis=0), (1, 2, 3, 0))
-        self.HH = tf.transpose(tf.repeat(self.HH, repeats[3], axis=0), (1, 2, 3, 0))
+    def repeat_filters(self):
+        repeats = self.init_shape[-1]
+        self.LL = tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0))
+        self.LH = tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0))
+        self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
+        self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 def WhiteningAndColoring(Layer):
     def __init__(self):
