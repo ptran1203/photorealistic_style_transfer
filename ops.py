@@ -1,9 +1,8 @@
 
 import tensorflow as tf
 import numpy as np
-import keras
 
-class WaveLetPooling(keras.layers.Layer):
+class WaveLetPooling(tf.keras.layers.Layer):
     def __init__(self, _name):
         super(WaveLetPooling, self).__init__()
         self._name = _name
@@ -48,7 +47,7 @@ class WaveLetPooling(keras.layers.Layer):
         self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 
-class WaveLetUnPooling(keras.layers.Layer):
+class WaveLetUnPooling(tf.keras.layers.Layer):
     def __init__(self, _name):
         super(WaveLetUnPooling, self).__init__()
         self._name = _name
@@ -109,7 +108,7 @@ class WaveLetUnPooling(keras.layers.Layer):
         self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
         self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
-class WhiteningAndColoring(keras.layers.Layer):
+class WhiteningAndColoring(tf.keras.layers.Layer):
     def __init__(self):
         super(WhiteningAndColoring, self).__init__()
 
@@ -170,7 +169,7 @@ class WhiteningAndColoring(keras.layers.Layer):
 
         return blended
 
-class Reduction(keras.layers.Layer):
+class Reduction(tf.keras.layers.Layer):
     def __init__(self):
         super(Reduction, self).__init__()
 
