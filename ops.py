@@ -81,6 +81,10 @@ class WaveLetUnPooling(Layer):
         print(HL_in)
         print(self.HL)
         print(tensor_in)
+        print([
+            LL_in.shape[-1], LH_in.shape[-1],
+            HL_in.shape[-1], HH_in.shape[-1],
+        ])
 
         return tf.concat([
             tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
