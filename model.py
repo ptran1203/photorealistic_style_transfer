@@ -97,7 +97,6 @@ class WCT2:
                 x = WaveLetUnPooling()([x, lh, hl, hh, original])
                 skip_id -= 1
             else:
-                print(x)
                 x = self.conv_block(x, filters, kernel_size)
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
