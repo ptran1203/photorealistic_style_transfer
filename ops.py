@@ -1,12 +1,12 @@
 
-from keras.layers import Layer
-import keras.backend as K
 import tensorflow as tf
 import numpy as np
+import keras
 
-class WaveLetPooling(Layer):
-    def __init__(self):
+class WaveLetPooling(keras.layers.Layer):
+    def __init__(self, _name):
         super(WaveLetPooling, self).__init__()
+        self._name = _name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -23,13 +23,14 @@ class WaveLetPooling(Layer):
         self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
 
 
+
     def call(self, inputs):
         self.repeat_filters(inputs.shape[-1])
 
-        return [tf.nn.conv2d(inputs, self.LL, strides=[1, 2, 2, 1], padding='SAME'),
-                tf.nn.conv2d(inputs, self.LH, strides=[1, 2, 2, 1], padding='SAME'),
-                tf.nn.conv2d(inputs, self.HL, strides=[1, 2, 2, 1], padding='SAME'),
-                tf.nn.conv2d(inputs, self.HH, strides=[1, 2, 2, 1], padding='SAME')]
+        return [_conv2d(inputs, self.LL, name="conv2d_wave_{}_1".format(self._name)),
+                _conv2d(inputs, self.LH, name="conv2d_wave_{}_2".format(self._name)),
+                _conv2d(inputs, self.HL, name="conv2d_wave_{}_3".format(self._name)),
+                _conv2d(inputs, self.HH, name="conv2d_wave_{}_4".format(self._name))]
 
 
     def compute_output_shape(self, input_shape):
@@ -46,10 +47,10 @@ class WaveLetPooling(Layer):
         self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
 
-class WaveLetUnPooling(Layer):
-    def __init__(self, init_shape):
+class WaveLetUnPooling(keras.layers.Layer):
+    def __init__(self, _name):
         super(WaveLetUnPooling, self).__init__()
-        self.init_shape = init_shape
+        self._name = _name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -77,13 +78,13 @@ class WaveLetUnPooling(Layer):
         print(self.HL)
         print(tensor_in)
 
-        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape, initializer=tf.random_normal_initializer())
+        self.LL = self.LH = self.HL = self.HH  = tf.get_variable('w', self.init_shape)
 
         return tf.concat([
-            tf.nn.conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
-            tf.nn.conv2d_transpose(LH_in, self.LH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
-            tf.nn.conv2d_transpose(HL_in, self.HL, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
-            tf.nn.conv2d_transpose(HH_in, self.HH, output_shape=tf.shape(tensor_in), strides=[1, 2, 2, 1], padding='SAME'),
+            _conv2d_transpose(LL_in, self.LL, output_shape=tf.shape(tensor_in), name='conv2d_transpose_wave_{}_1'.format(self._name)),
+            _conv2d_transpose(LH_in, self.LH, output_shape=tf.shape(tensor_in), name='conv2d_transpose_wave_{}_2'.format(self._name)),
+            _conv2d_transpose(HL_in, self.HL, output_shape=tf.shape(tensor_in), name='conv2d_transpose_wave_{}_3'.format(self._name)),
+            _conv2d_transpose(HH_in, self.HH, output_shape=tf.shape(tensor_in), name='conv2d_transpose_wave_{}_4'.format(self._name)),
             tensor_in,
         ], axis=-1)
 
@@ -107,7 +108,7 @@ class WaveLetUnPooling(Layer):
         self.HL = tf.transpose(tf.repeat(self.HL, repeats, axis=0), (1, 2, 3, 0))
         self.HH = tf.transpose(tf.repeat(self.HH, repeats, axis=0), (1, 2, 3, 0))
 
-def WhiteningAndColoring(Layer):
+class WhiteningAndColoring(keras.layers.Layer):
     def __init__(self):
         super(WhiteningAndColoring, self).__init__()
 
@@ -168,9 +169,25 @@ def WhiteningAndColoring(Layer):
 
         return blended
 
-class Reduction(Layer):
+class Reduction(keras.layers.Layer):
     def __init__(self):
         super(Reduction, self).__init__()
 
     def call(self, inputs):
         return tf.reduce_sum(inputs)
+
+
+def _conv2d_transpose(x, kernel, output_shape, name):
+    with tf.variable_scope(name):
+        conv = tf.nn.conv2d_transpose(
+                x, kernel,
+                output_shape=output_shape,
+                strides=[1, 2, 2, 1],
+                padding='SAME')
+        return conv
+
+
+def _conv2d(x, kernel, name):
+    with tf.variable_scope(name):
+        conv = tf.nn.conv2d(x, kernel, strides=strides, padding='SAME')
+        return conv
