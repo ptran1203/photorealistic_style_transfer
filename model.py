@@ -103,6 +103,8 @@ class WCT2:
 
         self.wct = Model(inputs=img, outputs=out, name='wct')
 
+        print("Build WCT model -> Done")
+
         for layer in self.wct.layers:
             # dont train waveletpooling layers
             if "wave" in layer.name:
