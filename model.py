@@ -39,11 +39,10 @@ class WCT2:
         self.img_shape = (self.rst, self.rst, 3)
         img = Input(self.img_shape)
 
-        self.build_wct_model()
+        self.wct = self.build_wct_model()
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
         gen_feat = self.encoder(recontruct_img)
-        _ = self.wct(recontruct_img)
 
         self.trainer = Model(inputs=img, outputs=[recontruct_img, gen_feat], name="trainer")
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse", "mse"])
@@ -58,7 +57,7 @@ class WCT2:
 
 
     def build_wct_model(self):
-        images = Input(self.img_shape)
+        img = Input(self.img_shape)
         kernel_size = 3
         skips = []
 
@@ -74,8 +73,6 @@ class WCT2:
         self.encoder = Model(inputs=vgg_model.inputs,
                             outputs=vgg_model.get_layer('block4_conv1').get_output_at(0),
                             name='encoder')
-
-        img = Input(self.img_shape)
 
         # ======= Encoder ======= #
         x = vgg_model.get_layer(VGG_LAYERS[0])(img)
@@ -102,14 +99,16 @@ class WCT2:
 
         out = self.conv_block(x, 3, kernel_size, 'linear')
 
-        self.wct = Model(inputs=img, outputs=out, name='wct')
+        wct = Model(inputs=img, outputs=out, name='wct')
 
         print("Build WCT model -> Done")
 
-        for layer in self.wct.layers:
+        for layer in wct.layers:
             # dont train waveletpooling layers
             if "wave" in layer.name:
                 layer.trainable = False
+
+        return wct
 
 
     @staticmethod
