@@ -189,5 +189,5 @@ def _conv2d_transpose(x, kernel, output_shape, name):
 
 def _conv2d(x, kernel, name):
     with tf.variable_scope(name):
-        conv = tf.nn.conv2d(x, kernel, strides=strides, padding='SAME')
+        conv = tf.nn.conv2d(x, kernel, strides=[1, 2, 2, 1], padding='SAME')
         return conv
