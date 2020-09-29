@@ -62,6 +62,7 @@ class WCT2:
                          weights='imagenet',
                          input_tensor=Input(self.img_shape),
                          input_shape=self.img_shape)
+        vgg_model.summary()
 
         vgg_model.trainable = False
         for layer in vgg_model.layers:
