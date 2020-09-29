@@ -38,7 +38,7 @@ class WCT2:
         self.show_interval = show_interval
         self.img_shape = (self.rst, self.rst, 3)
         img = Input(self.img_shape)
-
+        self.build_wct_model()
         self.wct = self.build_wct_model()
         # ======= Loss functions ======= #
         recontruct_img = self.wct([img])
