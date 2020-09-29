@@ -47,11 +47,11 @@ class WCT2:
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse",])
 
 
-    def conv_block(self, x, filters, kernel_size,
+    def conv_block(self, x, filters, kernel_size, name,
                     activation='relu'):
 
         x = Conv2D(filters, kernel_size=kernel_size, strides=1,
-                    padding='same', activation=activation)(x)
+                    padding='same', activation=activation, name=name)(x)
         return x
 
 
@@ -88,16 +88,16 @@ class WCT2:
         skip_id = 2
         for layer in VGG_LAYERS[::-1][:-1]:
             filters = vgg_model.get_layer(layer).output_shape[-1]
-
+            name = layer + "_clone"
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
-                x = self.conv_block(x, filters // 2, kernel_size)
+                x = self.conv_block(x, filters // 2, kernel_size, name=name)
                 original, lh, hl, hh = skips[skip_id]
                 x = WaveLetUnPooling(layer)([x, lh, hl, hh, original])
                 skip_id -= 1
             else:
-                x = self.conv_block(x, filters, kernel_size)
+                x = self.conv_block(x, filters, kernel_size, name=name)
 
-        out = self.conv_block(x, 3, kernel_size, 'linear')
+        out = self.conv_block(x, 3, kernel_size, 'linear', name="output")
 
         wct = Model(inputs=img, outputs=out, name='wct')
 
