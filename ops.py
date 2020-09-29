@@ -37,6 +37,7 @@ class WaveLetPooling(keras.layers.Layer):
         shape = (input_shape[0], input_shape[1]//2,
                 input_shape[2]//2, input_shape[3])
 
+        print("Conv2d shape", shape)
         return [shape, shape, shape, shape]
 
 
