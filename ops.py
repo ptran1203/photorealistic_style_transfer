@@ -69,6 +69,7 @@ class WaveLetUnPooling(Layer):
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
         self.repeat_filters()
+        print(self.init_shape)
 
         print("-----------------")
         print(LL_in)
