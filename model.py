@@ -4,8 +4,7 @@ import datetime
 import matplotlib.pyplot as plt
 import utils
 
-from tensorflow.keras.layers.convolutional import Conv2D
-from tensorflow.keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add
+from tensorflow.keras.layers import Input, Activation, Layer, UpSampling2D, Concatenate, Add, Conv2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications.vgg19 import VGG19
