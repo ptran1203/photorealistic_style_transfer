@@ -59,6 +59,18 @@ class WCT2:
         return x
 
 
+
+    def copy_layer(self, x, kernel_size, model, layer, name):
+        """
+        Need to copy layer for unique name
+        """
+        origin_layer = model.get_layer(layer)
+        filters = origin_layer.output_shape[-1]
+        return self.conv_block(x, filters, kernel_size,
+                               name=origin_layer.name + name)
+
+
+
     def build_wct_model(self):
         img = Input(self.img_shape, name='in_img')
         kernel_size = 3
@@ -78,11 +90,10 @@ class WCT2:
                             name='encoder')
 
         # ======= Encoder ======= #
-        x = vgg_model.get_layer(VGG_LAYERS[0])(img)
+        x = self.copy_layer(img, kernel_size, vgg_model,
+                            VGG_LAYERS[0], name='_encode')
         for layer in VGG_LAYERS[1:]:
-            origin_layer = vgg_model.get_layer(layer)
-            filters = origin_layer.output_shape[-1]
-            x = self.conv_block(x, filters, kernel_size, name=origin_layer.name + "_encode")
+            x = self.copy_layer(x, kernel_size, vgg_model, layer, name='_encode')
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
                 to_append = [x]
                 x, lh, hl, hh= WaveLetPooling(layer)(x)
@@ -195,6 +206,12 @@ class WCT2:
         style_feat, s_skips = self.pool_1([style_feat])
         content_feat = WhiteningAndColoring()([content_feat, style_feat])
         # step 3.
+
+
+    def clone_sub_model(self, layers):
+        return tf.keras.models.Sequential([
+            self.wct.get_layer(l) for l in layers
+        ])
 
 
     def init_transfer_sequence(self):

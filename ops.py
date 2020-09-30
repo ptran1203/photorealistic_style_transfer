@@ -3,9 +3,8 @@ import tensorflow as tf
 import numpy as np
 
 class WaveLetPooling(tf.keras.layers.Layer):
-    def __init__(self, _name):
+    def __init__(self):
         super(WaveLetPooling, self).__init__()
-        self._name = _name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -25,10 +24,10 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
     def call(self, inputs):
         LL, LH, HL, HH = self.repeat_filters(inputs.shape[-1])
-        return [_conv2d(inputs, LL, name="conv2d_wave_{}_1".format(self._name)),
-                _conv2d(inputs, LH, name="conv2d_wave_{}_2".format(self._name)),
-                _conv2d(inputs, HL, name="conv2d_wave_{}_3".format(self._name)),
-                _conv2d(inputs, HH, name="conv2d_wave_{}_4".format(self._name))]
+        return [_conv2d(inputs, LL),
+                _conv2d(inputs, LH),
+                _conv2d(inputs, HL),
+                _conv2d(inputs, HH)]
 
 
     def compute_output_shape(self, input_shape):
@@ -48,9 +47,8 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
 
 class WaveLetUnPooling(tf.keras.layers.Layer):
-    def __init__(self, _name):
+    def __init__(self):
         super(WaveLetUnPooling, self).__init__()
-        self._name = _name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -73,10 +71,10 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
         out_shape = tf.shape(tensor_in)
 
         return tf.concat([
-            _conv2d_transpose(LL_in, LL, output_shape=out_shape, name='conv2d_transpose_wave_{}_1'.format(self._name)),
-            _conv2d_transpose(LH_in, LH, output_shape=out_shape, name='conv2d_transpose_wave_{}_2'.format(self._name)),
-            _conv2d_transpose(HL_in, HL, output_shape=out_shape, name='conv2d_transpose_wave_{}_3'.format(self._name)),
-            _conv2d_transpose(HH_in, HH, output_shape=out_shape, name='conv2d_transpose_wave_{}_4'.format(self._name)),
+            _conv2d_transpose(LL_in, LL, output_shape=out_shape),
+            _conv2d_transpose(LH_in, LH, output_shape=out_shape),
+            _conv2d_transpose(HL_in, HL, output_shape=out_shape),
+            _conv2d_transpose(HH_in, HH, output_shape=out_shape),
             tensor_in,
         ], axis=-1)
 
