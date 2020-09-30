@@ -205,7 +205,10 @@ def get_predict_function(model, layers, name):
         ip = model.get_layer(layers[0]).input
         start = 1
     elif 'unpooling' in layers[0]:
-        ip = model.get_layer(layers[0]).inputs
+        # multi inputs
+        ip = [
+            _copy_input(l) for l in model.get_layer(layers[0])
+        ]
         start = 1
     else:
         ip = _copy_input(model.get_layer(layers[0]))
