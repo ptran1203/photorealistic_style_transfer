@@ -96,7 +96,7 @@ class WCT2:
             x = self.copy_layer(x, kernel_size, vgg_model, layer, name='_encode')
             if layer in ['block1_conv2', 'block2_conv2', 'block3_conv4']:
                 to_append = [x]
-                x, lh, hl, hh= WaveLetPooling(layer)(x)
+                x, lh, hl, hh= WaveLetPooling()(x)
                 to_append += [lh, hl, hh]
                 skips.append(to_append)
 
@@ -108,7 +108,7 @@ class WCT2:
             if layer in ['block4_conv1', 'block3_conv1', 'block2_conv1']:
                 x = self.conv_block(x, filters // 2, kernel_size, name=name)
                 original, lh, hl, hh = skips[skip_id]
-                x = WaveLetUnPooling(layer)([x, x, x, x, original])
+                x = WaveLetUnPooling()([x, x, x, x, original])
                 skip_id -= 1
             else:
                 x = self.conv_block(x, filters, kernel_size, name=name)
