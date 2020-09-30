@@ -161,7 +161,7 @@ class WCT2:
 
             batch_loss = self.init_hist()
             for content_img in data_gen.next_batch():
-                loss, *_ = self.trainer.train_on_batch([content_img], [content_img])
+                loss = self.trainer.train_on_batch([content_img], [content_img])
                 batch_loss['loss'].append(loss)
 
             # evaluate
