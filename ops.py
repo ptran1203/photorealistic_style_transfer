@@ -3,8 +3,9 @@ import tensorflow as tf
 import numpy as np
 
 class WaveLetPooling(tf.keras.layers.Layer):
-    def __init__(self):
+    def __init__(self, name):
         super(WaveLetPooling, self).__init__()
+        self._name = name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -47,8 +48,9 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
 
 class WaveLetUnPooling(tf.keras.layers.Layer):
-    def __init__(self):
+    def __init__(self, name):
         super(WaveLetUnPooling, self).__init__()
+        self._name = name
         square_of_2 = tf.math.sqrt(tf.constant(2, dtype=tf.float32))
         L = tf.math.divide(
             tf.constant(1, dtype=tf.float32),
@@ -182,14 +184,25 @@ def _conv2d(x, kernel):
     return conv
 
 
-def get_predict_function(model, in_layer, out_layers=[]):
-    if not out_layers:
-        out_layers = [in_layer]
+def _get_output(x, layer):
+    if "wave" in layer.name:
+        # return 4 outputs
+        ll, lh, hl, hh = layer(x)
+        return ll, [lh, hl, hh]
+    return layer(x), None
 
-    return tf.keras.backend.function(
-        [model.get_layer(in_layer).inputs],
-        [
-            model.get_layer(out_layer).get_output_at(-1) \
-                for out_layer in out_layers
-        ]
-    )
+
+def get_predict_function(model, layers):
+    # :1 to remove batch_size
+    ip_shape = model.get_layer(layers[0]).input_shape[1:]
+    ip = tf.keras.layers.Input(shape=ip_shape)
+    skips_out = None
+    x, skips = _get_output(ip, model.get_layer(layers[1]))
+    if skips is not None:
+        skips_out = skips
+    for l in layers[2:]:
+        x, skips = _get_output(x, model.get_layer(l))
+        if skips is not None:
+            skips_out = skips
+
+    return tf.keras.models.Model(inputs=ip, outputs=[x, skips_out], name="1")
