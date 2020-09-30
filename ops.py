@@ -102,6 +102,9 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
         ]
 
 class WhiteningAndColoring(tf.keras.layers.Layer):
+    """
+    https://github.com/eridgd/WCT-TF/blob/master/ops.py#L24
+    """
     def __init__(self):
         super(WhiteningAndColoring, self).__init__()
 
