@@ -199,34 +199,34 @@ class WCT2:
             print("Save model failed, {}".format(str(e)))
 
 
-    def transfer(self, content_img, style_img):
+    def transfer(self, content_img, style_img, alpha=1.0):
         # ===== Encode ===== #
         # step 1.
         content_feat, style_feat = self.en_1([content_img]), self.en_1([style_img])
-        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 2.
         content_feat, c_skips_1 = self.pool_1([content_feat])
         style_feat, s_skips = self.pool_1([style_feat])
-        c_skips_1 = [WhiteningAndColoring()([c_skips_1[i], s_skips[i]]) for i in range(4)]
-        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        c_skips_1 = [WhiteningAndColoring(alpha)([c_skips_1[i], s_skips[i]]) for i in range(4)]
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 3.
         content_feat, c_skips_2 = self.pool_2([content_feat])
         style_feat, s_skips = self.pool_2([style_feat])
-        c_skips_2 = [WhiteningAndColoring()([c_skips_2[i], s_skips[i]]) for i in range(4)]
-        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        c_skips_2 = [WhiteningAndColoring(alpha)([c_skips_2[i], s_skips[i]]) for i in range(4)]
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 4.
         content_feat, c_skips_3 = self.pool_3([content_feat])
         style_feat, s_skips = self.pool_3([style_feat])
-        c_skips_3 = [WhiteningAndColoring()([c_skips_3[i], s_skips[i]]) for i in range(4)]
-        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        c_skips_3 = [WhiteningAndColoring(alpha)([c_skips_3[i], s_skips[i]]) for i in range(4)]
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
 
         # ===== Decode ===== #
+        # No use Whitening and coloring in decoder
         # step 1.
         content_feat, style_feat = self.de_1([content_feat]), self.de_1([style_feat])
-        content_feat = WhiteningAndColoring()([content_feat, style_feat])
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 2.
         content_feat = self.unpool_1([content_feat] + c_skips_3)
-        # content_feat = WhiteningAndColoring()([content_feat, style_feat])
         content_feat = self.de_2([content_feat])
         content_feat = self.unpool_2([content_feat] + c_skips_2)
         content_feat = self.de_3([content_feat])
@@ -234,10 +234,7 @@ class WCT2:
 
         content_feat = self.final([content_feat])
 
-
-
-        
-        return content_feat
+        return content_feat.numpy()
 
 
     def clone_sub_model(self, layers):
