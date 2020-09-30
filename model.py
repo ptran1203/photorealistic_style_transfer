@@ -221,7 +221,7 @@ class WCT2:
         self.en_1 = get_predict_function(self.wct, ['in_img', 'block1_conv1_encode'], name='en_1')
         self.pool_1 = get_predict_function(
             self.wct,
-            'block1_conv2_encode', 'wave_let_pooling_0', 'block2_conv1_encode'],
+            ['block1_conv2_encode', 'wave_let_pooling_0', 'block2_conv1_encode'],
             name='pool_1')
         self.pool_2 = get_predict_function(
             self.wct,
@@ -237,7 +237,7 @@ class WCT2:
         self.unpool_1 = get_predict_function(self.wct, ['block4_conv1', 'block3_conv2_decode'], name='unpool_1')
         self.de_2 = get_predict_function(self.wct, ['block3_conv1_decode'], name='de_2')
         self.unpool_2 = get_predict_function(self.wct, ['block3_conv1', 'block2_conv2_decode'], name='unpool_2')
-        self.de_3 = get_predict_function(self.wct, 'block2_conv1_decode', name='de_3')
+        self.de_3 = get_predict_function(self.wct, ['block2_conv1_decode'], name='de_3')
         self.unpool_3 = get_predict_function(self.wct, ['block2_conv1', 'block1_conv2_decode'], name='unpool_3')
         self.final = get_predict_function(self.wct, ['output'], name='final')
 
