@@ -111,6 +111,8 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         Make it works first .
         """
         content, style = inputs
+        eps = 1e-3
+        alpha = 1e-3
         
         content_t = tf.transpose(tf.squeeze(content), (2, 0, 1))
         style_t = tf.transpose(tf.squeeze(style), (2, 0, 1))
@@ -123,30 +125,31 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         style_flat = tf.reshape(style_t, (Cs, Hs*Ws))
 
         # Content covariance
-        mc = tf.reduce_mean(content_flat, axis=1, keep_dims=True)
+        mc = tf.reduce_mean(content_flat, axis=1, keepdims=True)
         fc = content_flat - mc
         fcfc = tf.matmul(fc, fc, transpose_b=True) / (tf.cast(Hc*Wc, tf.float32) - 1.) + tf.eye(Cc)*eps
 
         # Style covariance
-        ms = tf.reduce_mean(style_flat, axis=1, keep_dims=True)
+        ms = tf.reduce_mean(style_flat, axis=1, keepdims=True)
         fs = style_flat - ms
         fsfs = tf.matmul(fs, fs, transpose_b=True) / (tf.cast(Hs*Ws, tf.float32) - 1.) + tf.eye(Cs)*eps
 
         # tf.svd is slower on GPU, see https://github.com/tensorflow/tensorflow/issues/13603
         with tf.device('/cpu:0'):  
-            Sc, Uc, _ = tf.svd(fcfc)
-            Ss, Us, _ = tf.svd(fsfs)
+            Sc, Uc, _ = tf.linalg.svd(fcfc)
+            Ss, Us, _ = tf.linalg.svd(fsfs)
 
         # Filter small singular values
-        k_c = tf.reduce_sum(tf.cast(tf.greater(Sc, 1e-5), tf.float32))
-        k_s = tf.reduce_sum(tf.cast(tf.greater(Ss, 1e-5), tf.float32))
+        k_c = tf.reduce_sum(tf.cast(tf.greater(Sc, 1e-5), tf.float32)).numpy()
+        k_s = tf.reduce_sum(tf.cast(tf.greater(Ss, 1e-5), tf.float32)).numpy()
 
+        k_c, k_s = int(k_c), int(k_s)
         # Whiten content feature
-        Dc = tf.diag(tf.pow(Sc[:k_c], -0.5))
+        Dc = tf.linalg.diag(tf.pow(Sc[:k_c], -0.5))
         fc_hat = tf.matmul(tf.matmul(tf.matmul(Uc[:,:k_c], Dc), Uc[:,:k_c], transpose_b=True), fc)
 
         # Color content with style
-        Ds = tf.diag(tf.pow(Ss[:k_s], 0.5))
+        Ds = tf.linalg.diag(tf.pow(Ss[:k_s], 0.5))
         fcs_hat = tf.matmul(tf.matmul(tf.matmul(Us[:,:k_s], Ds), Us[:,:k_s], transpose_b=True), fc_hat)
 
         # Re-center with mean of style
@@ -161,6 +164,7 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         blended = tf.expand_dims(tf.transpose(blended, (1,2,0)), 0)
 
         return blended
+
 
 class Reduction(tf.keras.layers.Layer):
     def __init__(self):
