@@ -3,6 +3,7 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 import utils
+import tensorflow.keras.backend as K
 
 from tensorflow.keras.layers import (
     Input, Activation, Layer,
