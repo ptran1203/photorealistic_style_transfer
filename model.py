@@ -240,7 +240,10 @@ class WCT2:
 
         self.unpool_1 = get_predict_function(
             self.wct,
-            ['wave_let_unpooling_2', 'block3_conv2_decode'],
+            [
+                'wave_let_unpooling_2', 'block3_conv4_decode',
+                'block3_conv3_decode', 'block3_conv2_decode'
+            ],
             name='unpool_1')
 
         self.de_2 = get_predict_function(self.wct, ['block3_conv1_decode'], name='de_2')
