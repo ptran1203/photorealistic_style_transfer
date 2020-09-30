@@ -204,11 +204,11 @@ def get_predict_function(model, layers, name):
         ip = tf.keras.layers.Input(shape=ip_shape)
         start = 0
 
-    x, skips = get_output(ip, model.get_layer(layers[start]))
+    x, skips = _get_output(ip, model.get_layer(layers[start]))
     if skips is not None:
         skips_out = skips
     for l in layers[start + 1:]:
-        x, skips = get_output(x, model.get_layer(l))
+        x, skips = _get_output(x, model.get_layer(l))
         if skips is not None:
             skips_out = skips
 
