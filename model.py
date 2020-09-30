@@ -232,7 +232,11 @@ class WCT2:
 
         self.pool_3 = get_predict_function(
             self.wct,
-            ['block3_conv2_encode', 'wave_let_pooling_2', 'block4_conv1_encode'],
+            [
+                'block3_conv2_encode', 'block3_conv3_encode',
+                'block3_conv4_encode',
+                'wave_let_pooling_2', 'block4_conv1_encode'
+            ],
             name='pool_3')
 
         # ===== decoder layers ===== #
