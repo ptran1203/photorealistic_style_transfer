@@ -105,8 +105,9 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
     """
     https://github.com/eridgd/WCT-TF/blob/master/ops.py#L24
     """
-    def __init__(self):
+    def __init__(self, alpha=1.0):
         super(WhiteningAndColoring, self).__init__()
+        self.alpha = alpha
 
 
     def call(self, inputs):
@@ -115,7 +116,7 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         """
         content, style = inputs
         eps = 1e-8
-        alpha = 1.0
+        alpha = self.alpha
         
         content_t = tf.transpose(tf.squeeze(content), (2, 0, 1))
         style_t = tf.transpose(tf.squeeze(style), (2, 0, 1))
