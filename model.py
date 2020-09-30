@@ -219,14 +219,17 @@ class WCT2:
     def init_transfer_sequence(self):
         # ===== encoder layers ===== #
         self.en_1 = get_predict_function(self.wct, ['in_img', 'block1_conv1_encode'], name='en_1')
+
         self.pool_1 = get_predict_function(
             self.wct,
             ['block1_conv2_encode', 'wave_let_pooling_0', 'block2_conv1_encode'],
             name='pool_1')
+
         self.pool_2 = get_predict_function(
             self.wct,
             ['block2_conv2_encode', 'wave_let_pooling_1', 'block3_conv1_encode'],
             name='pool_2')
+
         self.pool_3 = get_predict_function(
             self.wct,
             ['block3_conv2_encode', 'wave_let_pooling_2', 'block4_conv1_encode'],
@@ -234,11 +237,26 @@ class WCT2:
 
         # ===== decoder layers ===== #
         self.de_1 = get_predict_function(self.wct, ['block4_conv1_decode'], name='de_1')
-        self.unpool_1 = get_predict_function(self.wct, ['block4_conv1', 'block3_conv2_decode'], name='unpool_1')
+
+        self.unpool_1 = get_predict_function(
+            self.wct,
+            ['wave_let_unpooling_2', 'block3_conv2_decode'],
+            name='unpool_1')
+
         self.de_2 = get_predict_function(self.wct, ['block3_conv1_decode'], name='de_2')
-        self.unpool_2 = get_predict_function(self.wct, ['block3_conv1', 'block2_conv2_decode'], name='unpool_2')
+
+        self.unpool_2 = get_predict_function(
+            self.wct,
+            ['wave_let_unpooling_1', 'block2_conv2_decode'],
+            name='unpool_2')
+
         self.de_3 = get_predict_function(self.wct, ['block2_conv1_decode'], name='de_3')
-        self.unpool_3 = get_predict_function(self.wct, ['block2_conv1', 'block1_conv2_decode'], name='unpool_3')
+
+        self.unpool_3 = get_predict_function(
+            self.wct,
+            ['wave_let_unpooling_0', 'block1_conv2_decode'],
+            name='unpool_3')
+
         self.final = get_predict_function(self.wct, ['output'], name='final')
 
 
