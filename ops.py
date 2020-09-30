@@ -192,17 +192,25 @@ def _get_output(x, layer):
     return layer(x), None
 
 
-def get_predict_function(model, layers):
-    # :1 to remove batch_size
-    ip_shape = model.get_layer(layers[0]).input_shape[1:]
-    ip = tf.keras.layers.Input(shape=ip_shape)
+def get_predict_function(model, layers, name):
     skips_out = None
-    x, skips = _get_output(ip, model.get_layer(layers[1]))
+
+    if layers[0] == 'in_img':
+        ip = model.get_layer(layers[0]).input
+        start = 1
+    else:
+        # :1 to remove batch_size
+        ip_shape = model.get_layer(layers[0]).input_shape[1:]
+        ip = tf.keras.layers.Input(shape=ip_shape)
+        start = 0
+
+    x, skips = get_output(ip, model.get_layer(layers[start]))
     if skips is not None:
         skips_out = skips
-    for l in layers[2:]:
-        x, skips = _get_output(x, model.get_layer(l))
+    for l in layers[start + 1:]:
+        x, skips = get_output(x, model.get_layer(l))
         if skips is not None:
             skips_out = skips
 
-    return tf.keras.models.Model(inputs=ip, outputs=[x, skips_out], name="1")
+    outputs = [x] if skips_out is None else [x, skips_out]
+    return tf.keras.models.Model(inputs=ip, outputs=outputs, name=name)
