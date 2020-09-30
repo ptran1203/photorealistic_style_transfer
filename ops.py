@@ -111,8 +111,8 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         Make it works first .
         """
         content, style = inputs
-        eps = 1e-3
-        alpha = 1e-3
+        eps = 1e-8
+        alpha = 1.0
         
         content_t = tf.transpose(tf.squeeze(content), (2, 0, 1))
         style_t = tf.transpose(tf.squeeze(style), (2, 0, 1))
