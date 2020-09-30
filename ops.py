@@ -188,7 +188,7 @@ def _get_output(x, layer):
     if "_pooling" in layer.name:
         # return 4 outputs
         ll, lh, hl, hh = layer(x)
-        return ll, [x, lh, hl, hh]
+        return ll, [lh, hl, hh, x]
     return layer(x), None
 
 
