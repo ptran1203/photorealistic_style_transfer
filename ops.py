@@ -185,7 +185,7 @@ def _conv2d(x, kernel):
 
 
 def _get_output(x, layer):
-    if "wave" in layer.name:
+    if "_pooling" in layer.name:
         # return 4 outputs
         ll, lh, hl, hh = layer(x)
         return ll, [lh, hl, hh]
@@ -194,7 +194,10 @@ def _get_output(x, layer):
 
 def _copy_input(layer):
     # :1 to remove batch_size
-    ip_shape = layer.input_shape[1:]
+    if hasattr(layer, 'input_shape'):
+        ip_shape = layer.input_shape[1:]
+    else:
+        ip_shape = layer.shape[1:]
     return tf.keras.layers.Input(shape=ip_shape)
 
 
@@ -207,9 +210,9 @@ def get_predict_function(model, layers, name):
     elif 'unpooling' in layers[0]:
         # multi inputs
         ip = [
-            _copy_input(l) for l in model.get_layer(layers[0])
+            _copy_input(l) for l in model.get_layer(layers[0]).input
         ]
-        start = 1
+        start = 0
     else:
         ip = _copy_input(model.get_layer(layers[0]))
         start = 0
