@@ -1,6 +1,7 @@
 
 import tensorflow as tf
 import numpy as np
+import tensorflow.keras.backend as K
 
 class WaveLetPooling(tf.keras.layers.Layer):
     def __init__(self, name):
@@ -235,3 +236,10 @@ def get_predict_function(model, layers, name):
 
     outputs = [x] if skips_out is None else [x, skips_out]
     return tf.keras.models.Model(inputs=ip, outputs=outputs, name=name)
+
+
+def gram_matrix(x):
+    assert K.ndim(x) == 3
+    features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
+    gram = K.dot(features, K.transpose(features))
+    return gram
