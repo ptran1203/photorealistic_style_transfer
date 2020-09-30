@@ -192,16 +192,23 @@ def _get_output(x, layer):
     return layer(x), None
 
 
+def _copy_input(layer):
+    # :1 to remove batch_size
+    ip_shape = layer.input_shape[1:]
+    return tf.keras.layers.Input(shape=ip_shape)
+
+
 def get_predict_function(model, layers, name):
     skips_out = None
 
     if layers[0] == 'in_img':
         ip = model.get_layer(layers[0]).input
         start = 1
+    elif 'unpooling' in layers[0]:
+        ip = model.get_layer(layers[0]).inputs
+        start = 1
     else:
-        # :1 to remove batch_size
-        ip_shape = model.get_layer(layers[0]).input_shape[1:]
-        ip = tf.keras.layers.Input(shape=ip_shape)
+        ip = _copy_input(model.get_layer(layers[0]))
         start = 0
 
     x, skips = _get_output(ip, model.get_layer(layers[start]))
