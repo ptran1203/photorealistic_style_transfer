@@ -15,7 +15,7 @@ from tensorflow.keras.applications.vgg19 import VGG19
 from ops import (
     WaveLetPooling, WaveLetUnPooling, Reduction,
     WhiteningAndColoring, get_predict_function,
-    gram_matrix)
+    gram_matrix, batch_gram_matries)
 
 try:
     # In case run on google colab
@@ -58,8 +58,8 @@ class WCT2:
         feat_gen = self.encoder(gen_img)
         feat = self.encoder(img)
 
-        gram_gen = gram_matrix(feat_gen)
-        gram_in = gram_matrix(feat)
+        gram_gen = batch_gram_matries(feat_gen)
+        gram_in = batch_gram_matries(feat)
 
         gram_loss = K.sum(K.square(gram_gen - gram_in)) / (4.0 * (channels ** 2) * (size ** 2))
         return gram_loss
