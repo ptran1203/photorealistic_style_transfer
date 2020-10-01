@@ -204,14 +204,14 @@ class WCT2:
         try:
             self.wct.save_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
-            print("Could not load model, {}".format(str(e))) 
+            print("Save model failed, {}".format(str(e)))
 
 
     def load_weight(self):
         try:
             self.wct.load_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
-            print("Save model failed, {}".format(str(e)))
+            print("Could not load model, {}".format(str(e))) 
 
 
     def transfer(self, content_img, style_img, alpha=1.0):
