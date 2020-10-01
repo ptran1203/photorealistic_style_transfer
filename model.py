@@ -181,7 +181,7 @@ class WCT2:
             ))
 
             if e % self.show_interval == 0:
-                # self.save_weight()
+                self.save_weight()
                 idx = np.random.randint(0, data_gen.max_size - 1)
                 img = data_gen.x[idx:idx+1]
                 gen_img = self.wct.predict(img)
