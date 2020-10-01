@@ -35,7 +35,7 @@ VGG_LAYERS = [
 class WCT2:
     def __init__(self, base_dir, rst, lr,
                 show_interval=25,
-                style_loss_weight=1):
+                gram_loss_weight=1.0):
         self.base_dir = base_dir
         self.rst = rst
         self.lr = lr
@@ -47,10 +47,12 @@ class WCT2:
         recontruct_img = self.wct(img)
         
         self.trainer = Model(inputs=[img], outputs=[recontruct_img], name="trainer")
-        self.trainer.add_loss(self.gram_loss(img, recontruct_img))
+        self.trainer.add_loss(gram_loss_weight * self.gram_loss(img, recontruct_img))
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse"])
 
-        
+        self.init_transfer_sequence()
+
+
     def gram_loss(self, img, gen_img):
         channels = 3
         size = 256 * 256
@@ -219,18 +221,18 @@ class WCT2:
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 2.
         content_feat, c_skips_1 = self.pool_1([content_feat])
-        style_feat, s_skips = self.pool_1([style_feat])
-        c_skips_1 = [WhiteningAndColoring(alpha)([c_skips_1[i], s_skips[i]]) for i in range(4)]
+        style_feat, s_skips_1 = self.pool_1([style_feat])
+        c_skips_1 = [WhiteningAndColoring(alpha)([c_skips_1[i], s_skips_1[i]]) for i in range(4)]
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 3.
         content_feat, c_skips_2 = self.pool_2([content_feat])
-        style_feat, s_skips = self.pool_2([style_feat])
-        c_skips_2 = [WhiteningAndColoring(alpha)([c_skips_2[i], s_skips[i]]) for i in range(4)]
+        style_feat, s_skips_2 = self.pool_2([style_feat])
+        c_skips_2 = [WhiteningAndColoring(alpha)([c_skips_2[i], s_skips_2[i]]) for i in range(4)]
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 4.
         content_feat, c_skips_3 = self.pool_3([content_feat])
-        style_feat, s_skips = self.pool_3([style_feat])
-        c_skips_3 = [WhiteningAndColoring(alpha)([c_skips_3[i], s_skips[i]]) for i in range(4)]
+        style_feat, s_skips_3 = self.pool_3([style_feat])
+        c_skips_3 = [WhiteningAndColoring(alpha)([c_skips_3[i], s_skips_3[i]]) for i in range(4)]
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
 
         # ===== Decode ===== #
@@ -240,20 +242,26 @@ class WCT2:
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         # step 2.
         content_feat = self.unpool_1([content_feat] + c_skips_3)
+        style_feat = self.unpool_1([style_feat] + s_skips_3)
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         content_feat = self.de_2([content_feat])
+        style_feat = self.de_2([style_feat])
+        # step 3.
         content_feat = self.unpool_2([content_feat] + c_skips_2)
+        style_feat = self.unpool_2([style_feat] + s_skips_2)
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
         content_feat = self.de_3([content_feat])
+        style_feat = self.de_3([style_feat])
+
         content_feat = self.unpool_3([content_feat] + c_skips_1)
+        style_feat = self.unpool_3([style_feat] + s_skips_1)
+
+        content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
+
 
         content_feat = self.final([content_feat])
 
         return content_feat.numpy()
-
-
-    def clone_sub_model(self, layers):
-        return tf.keras.models.Sequential([
-            self.wct.get_layer(l) for l in layers
-        ])
 
 
     def init_transfer_sequence(self):
