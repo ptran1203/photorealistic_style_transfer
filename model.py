@@ -15,7 +15,7 @@ from tensorflow.keras.applications.vgg19 import VGG19
 from ops import (
     WaveLetPooling, WaveLetUnPooling, Reduction,
     WhiteningAndColoring, get_predict_function,
-    gram_matrix, batch_gram_matries)
+    gram_matrix)
 
 try:
     # In case run on google colab
