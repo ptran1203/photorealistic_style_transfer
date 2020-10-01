@@ -236,7 +236,6 @@ class WCT2:
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
 
         # ===== Decode ===== #
-        # No use Whitening and coloring in decoder
         # step 1.
         content_feat, style_feat = self.de_1([content_feat]), self.de_1([style_feat])
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])

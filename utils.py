@@ -78,11 +78,11 @@ def show_images(img_array, denorm=True, deprcs=True):
     cv2_imshow(img)
 
 
-def http_get_img(url, rst=64, gray=False, normalize=True):
+def http_get_img(url, rst=64, gray=False, normalize=False):
     req = urllib.request.urlopen(url)
     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
     img = cv2.imdecode(arr, -1)
-    if rst is not None:
+    if rst:
         img = image_resize(img, rst)
     if gray:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -91,6 +91,15 @@ def http_get_img(url, rst=64, gray=False, normalize=True):
     if normalize:
         img = norm(preprocess(img))
 
+    return img
+
+def get_local_img(path, rst=None, normalize=False):
+    img = cv2.imread(path)
+    if rst:
+        img = image_resize(img, rst)
+    img = np.expand_dims(img, 0)
+    if normalize:
+        img = norm(preprocess(img))
     return img
 
 
@@ -109,3 +118,5 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
         dim = (width, int(h * r))
     resized = cv2.resize(image, dim, interpolation = inter)
     return resized
+
+
