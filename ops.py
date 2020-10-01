@@ -238,13 +238,8 @@ def get_predict_function(model, layers, name):
     return tf.keras.models.Model(inputs=ip, outputs=outputs, name=name)
 
 
-def gram_matrix(x):
-    features = K.batch_flatten(K.permute_dimensions(x, (2, 0, 1)))
-    gram = K.dot(features, K.transpose(features))
-    return gram
-
-
-def batch_gram_matries(x):
-    return tf.reduce_sum(
-        tf.map_fn(gram_matrix, x)
-    )
+def gram_matrix(input_tensor):
+    result = tf.linalg.einsum('bijc,bijd->bcd', input_tensor, input_tensor)
+    input_shape = tf.shape(input_tensor)
+    num_locations = tf.cast(input_shape[1]*input_shape[2], tf.float32)
+    return result/(num_locations)

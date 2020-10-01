@@ -58,8 +58,8 @@ class WCT2:
         feat_gen = self.encoder(gen_img)
         feat = self.encoder(img)
 
-        gram_gen = batch_gram_matries(feat_gen)
-        gram_in = batch_gram_matries(feat)
+        gram_gen = gram_matrix(feat_gen)
+        gram_in = gram_matrix(feat)
 
         gram_loss = K.sum(K.square(gram_gen - gram_in)) / (4.0 * (channels ** 2) * (size ** 2))
         return gram_loss
