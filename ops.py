@@ -245,4 +245,6 @@ def gram_matrix(x):
 
 
 def batch_gram_matries(x):
-    return tf.reduce_sum([gram_matrix(i) for i in tf.unstack(x)])
+    return tf.reduce_sum(
+        tf.map_fn(gram_matrix, x)
+    )
