@@ -4,6 +4,8 @@ Photorealistic Style Transfer via Wavelet Transforms - https://arxiv.org/abs/190
 
 Keras + tensorflow implementation of WCT2.
 
+Original implementation in [PyTorch](https://github.com/clovaai/WCT2) by [Jaejun-yoo](https://github.com/jaejun-yoo)
+
 ------
 
 #### results
