@@ -61,7 +61,7 @@ class WCT2:
         gram_in = [gram_matrix(f) for f in feats]
         num_style_layers = len(gram_gen)
         loss_list = [
-            K.square(gram_gen[i] - gram_in[i]) \
+            K.mean(K.square(gram_gen[i] - gram_in[i])) \
                 for i in range(num_style_layers)
         ]
 
