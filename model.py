@@ -65,7 +65,7 @@ class WCT2:
                 for i in range(num_style_layers)
         ]
 
-        gram_loss = TfReduceSum(loss_list) / num_style_layers
+        gram_loss = TfReduceSum()(loss_list) / num_style_layers
         return gram_loss
 
 
