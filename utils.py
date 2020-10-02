@@ -125,5 +125,3 @@ def image_resize(image, width = None, height = None, inter = cv2.INTER_AREA):
         dim = (width, int(h * r))
     resized = cv2.resize(image, dim, interpolation = inter)
     return resized
-
-

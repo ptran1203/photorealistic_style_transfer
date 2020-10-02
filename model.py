@@ -13,7 +13,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications.vgg19 import VGG19
 from ops import (
-    WaveLetPooling, WaveLetUnPooling, Reduction,
+    WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
 
@@ -57,13 +57,17 @@ class WCT2:
         channels = 3
         size = 256 * 256
 
-        feat_gen = self.encoder(gen_img)
-        feat = self.encoder(img)
+        feat_gens = self.encoder(gen_img)
+        feats = self.encoder(img)
 
-        gram_gen = gram_matrix(feat_gen)
-        gram_in = gram_matrix(feat)
+        gram_gen = [gram_matrix(f) for f in feat_gens]
+        gram_in = [gram_matrix(f) for f in feats]
+        loss_list = [
+            K.square(gram_gen[i] - gram_in[i]) \
+                for i in range(len(gram_gen))
+        ]
 
-        gram_loss = K.sum(K.square(gram_gen - gram_in)) / (4.0 * (channels ** 2) * (size ** 2))
+        gram_loss = TfReduceSum(loss_list) / (4.0 * (channels ** 2) * (size ** 2))
         return gram_loss
 
 
@@ -102,7 +106,8 @@ class WCT2:
             layer.trainable = False
 
         self.encoder = Model(inputs=vgg_model.inputs,
-                            outputs=vgg_model.get_layer('block4_conv1').get_output_at(0),
+                            outputs=[vgg_model.get_layer('block{}_conv1'.format(i)).get_output_at(0) \
+                                    for l in {1, 2, 3, 4}],
                             name='encoder')
 
         # ======= Encoder ======= #

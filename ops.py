@@ -171,9 +171,9 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         return blended
 
 
-class Reduction(tf.keras.layers.Layer):
+class TfReduceSum(tf.keras.layers.Layer):
     def __init__(self):
-        super(Reduction, self).__init__()
+        super(TfReduceSum, self).__init__()
 
     def call(self, inputs):
         return tf.reduce_sum(inputs)
