@@ -54,20 +54,18 @@ class WCT2:
 
 
     def gram_loss(self, img, gen_img):
-        channels = 3
-        size = 256 * 256
-
         feat_gens = self.encoder(gen_img)
         feats = self.encoder(img)
 
         gram_gen = [gram_matrix(f) for f in feat_gens]
         gram_in = [gram_matrix(f) for f in feats]
+        num_style_layers = len(gram_gen)
         loss_list = [
             K.square(gram_gen[i] - gram_in[i]) \
-                for i in range(len(gram_gen))
+                for i in range(num_style_layers)
         ]
 
-        gram_loss = TfReduceSum(loss_list) / (4.0 * (channels ** 2) * (size ** 2))
+        gram_loss = TfReduceSum(loss_list) / num_style_layers
         return gram_loss
 
 
