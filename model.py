@@ -105,7 +105,7 @@ class WCT2:
 
         self.encoder = Model(inputs=vgg_model.inputs,
                             outputs=[vgg_model.get_layer('block{}_conv1'.format(i)).get_output_at(0) \
-                                    for l in {1, 2, 3, 4}],
+                                    for i in {1, 2, 3, 4}],
                             name='encoder')
 
         # ======= Encoder ======= #
