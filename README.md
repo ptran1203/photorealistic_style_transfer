@@ -8,6 +8,10 @@ Original implementation in [PyTorch](https://github.com/clovaai/WCT2) by [Jaejun
 
 ------
 
+Dataset(.pkl) and weights can be found (here)[https://drive.google.com/drive/folders/16iG3RGRUbRBn0h9fydwlAZtjFzSV1eUg?usp=sharing] (You can add path to your google drive if you want to run on (colab)[/WCT2.ipynb])
+
+------
+
 #### results
 
 | Content | Style | Result |
