@@ -25,6 +25,6 @@ Dataset(.pkl) and weights can be found [here](https://drive.google.com/drive/fol
 |![c1](/examples/input/in60.png)|![g1](/examples/style/tar60.png)| ![g1](/examples/output/out60.png) |
 |![c1](/examples/input/in42.png)|![g1](/examples/style/tar42.png)| ![g1](/examples/output/out42.png) |
 
-#### Without segmentation map, model can't capture the object well
+#### Without segmentation map, model failed to transfer the images properly
 |![c1](/examples/input/in20.png)|![g1](/examples/style/tar20.png)| ![g1](/examples/output/out20.png) |
 |--|--|--|
