@@ -33,13 +33,15 @@ class WCT2:
         lr=1e-3,
         show_interval=25,
         gram_loss_weight=1.0,
-        checkpoint_path="wtc2.h5"
+        checkpoint_path="wtc2.h5",
+        backbone_weight="imagenet",
     ):
         self.image_size = image_size
         self.lr = lr
         self.show_interval = show_interval
         self.img_shape = (self.image_size, self.image_size, 3)
         self.checkpoint_path = checkpoint_path
+        self.backbone_weight = backbone_weight
 
         img = Input(self.img_shape)
         self.wct = self.build_wct_model()
@@ -89,7 +91,7 @@ class WCT2:
         skips = []
 
         vgg_model = VGG19(include_top=False,
-                          weights='imagenet',
+                          weights=self.backbone_weight,
                           input_tensor=Input(self.img_shape),
                           input_shape=self.img_shape)
 
@@ -98,7 +100,7 @@ class WCT2:
             layer.trainable = False
 
         vgg_output = [
-            vgg_model.get_layer(f'block{i}_conv1'.get_output_at(0))
+            vgg_model.get_layer(f'block{i}_conv1').get_output_at(0)
             for i in {1, 2, 3, 4}
         ]
 
