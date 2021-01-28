@@ -100,7 +100,7 @@ class WCT2:
             layer.trainable = False
 
         vgg_output = [
-            vgg_model.get_layer(f'block{i}_conv1'.get_output_at(0)
+            vgg_model.get_layer(f'block{i}_conv1'.get_output_at(0))
             for i in {1, 2, 3, 4}
         ]
 
