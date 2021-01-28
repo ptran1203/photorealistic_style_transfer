@@ -16,7 +16,7 @@ from ops import (
     WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-from data_processing import build_input_pipe, preprocess_image, deprocess_image
+from data_processing import build_input_pipe, preprocess_image, restore_image
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -189,13 +189,13 @@ class WCT2:
 
     def save_weight(self):
         try:
-            self.wct.save_weights(self.base_dir + '/wct2.h5')
+            self.wct.save_weights(self.checkpoint_path)
         except Exception as e:
             print("Save model failed, {}".format(str(e)))
 
     def load_weight(self):
         try:
-            self.wct.load_weights(self.base_dir + '/wct2.h5')
+            self.wct.load_weights(self.checkpoint_path)
         except Exception as e:
             print("Could not load model, {}".format(str(e))) 
 
@@ -249,7 +249,7 @@ class WCT2:
         output = self.final([content_feat])
 
         # Deprocess output
-        output = deprocess_image(output)
+        output = restore_image(output.numpy())
 
         return output
 

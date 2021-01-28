@@ -30,6 +30,7 @@ def http_get_img(url, rst=64):
     req = urllib.request.urlopen(url)
     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
     img = cv2.imdecode(arr, -1)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     if rst:
         img = image_resize(img, rst)
@@ -40,6 +41,7 @@ def http_get_img(url, rst=64):
 
 def get_local_img(path, rst=None):
     img = cv2.imread(path)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     if rst:
         img = image_resize(img, rst)
 

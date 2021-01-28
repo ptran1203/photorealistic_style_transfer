@@ -5,8 +5,6 @@ from tensorflow.python.keras.applications import imagenet_utils
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
 
-MEAN_TENSOR = tf.constant([103.939, 116.779, 123.68], tf.float32)
-
 image_feature_description = {
     "image_id": tf.io.FixedLenFeature([], tf.string),
     "label": tf.io.FixedLenFeature([], tf.string),
@@ -67,3 +65,34 @@ def build_input_pipe(tfrecord_file, batch_size=0, preprocess_method="vgg19", rep
     dataset = dataset.prefetch(AUTOTUNE)
 
     return dataset
+
+
+def restore_image(x, data_format='channels_last'):
+    mean = [103.939, 116.779, 123.68]
+
+    # Zero-center by mean pixel
+    if data_format == 'channels_first':
+        if x.ndim == 3:
+            x[0, :, :] += mean[0]
+            x[1, :, :] += mean[1]
+            x[2, :, :] += mean[2]
+        else:
+            x[:, 0, :, :] += mean[0]
+            x[:, 1, :, :] += mean[1]
+            x[:, 2, :, :] += mean[2]
+    else:
+        x[..., 0] += mean[0]
+        x[..., 1] += mean[1]
+        x[..., 2] += mean[2]
+
+    if data_format == 'channels_first':
+        # 'BGR'->'RGB'
+        if x.ndim == 3:
+            x = x[::-1, ...]
+        else:
+            x = x[:, ::-1, ...]
+    else:
+        # 'BGR'->'RGB'
+        x = x[..., ::-1]
+
+    return x
