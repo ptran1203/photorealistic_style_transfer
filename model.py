@@ -35,9 +35,7 @@ class WCT2:
         gram_loss_weight=1.0,
         checkpoint_path="wtc2.h5"
     ):
-        self.base_dir = base_dir
         self.image_size = image_size
-        self.rst = rst
         self.lr = lr
         self.show_interval = show_interval
         self.img_shape = (self.image_size, self.image_size, 3)
