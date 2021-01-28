@@ -95,4 +95,13 @@ def restore_image(x, data_format='channels_last'):
         # 'BGR'->'RGB'
         x = x[..., ::-1]
 
-    return x
+    return rescale(x) * 255.0
+
+
+def rescale(x):
+    """
+    Rescale input to range [0, 1]
+    """
+    min_val = np.min(x)
+    max_val = np.max(x)
+    x = (x - min_val) / (max_val - min_val)
