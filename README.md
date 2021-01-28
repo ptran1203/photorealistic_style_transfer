@@ -17,7 +17,6 @@ Quick start in [colab](/WCT2.ipynb)
 | Content | Style | Result |
 |--|--|--|
 |![c1](/examples/input/in17.png)|![g1](/examples/style/tar17.png)| ![g1](/examples/output/out17.png) |
-|![c1](/examples/input/in17.png)|![g1](/examples/style/tar17.png)| ![g1](/examples/output/out17.png) |
 |![c1](/examples/input/in29.png)|![g1](/examples/style/tar29.png)| ![g1](/examples/output/out29.png) |
 |![c1](/examples/input/in31.png)|![g1](/examples/style/tar31.png)| ![g1](/examples/output/out31.png) |
 |![c1](/examples/input/in35.png)|![g1](/examples/style/tar35.png)| ![g1](/examples/output/out35.png) |
@@ -26,7 +25,6 @@ Quick start in [colab](/WCT2.ipynb)
 |![c1](/examples/input/in46.png)|![g1](/examples/style/tar46.png)| ![g1](/examples/output/out46.png) |
 |![c1](/examples/input/in52.png)|![g1](/examples/style/tar52.png)| ![g1](/examples/output/out52.png) |
 |![c1](/examples/input/in55.png)|![g1](/examples/style/tar55.png)| ![g1](/examples/output/out55.png) |
-|![c1](/examples/input/in60.png)|![g1](/examples/style/tar60.png)| ![g1](/examples/output/out60.png) |
 
 #### Without segmentation map, model failed to transfer the images properly
 |![c1](/examples/input/in20.png)|![g1](/examples/style/tar20.png)| ![g1](/examples/output/out20.png) |
