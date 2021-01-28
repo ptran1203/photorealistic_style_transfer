@@ -134,7 +134,7 @@ class WCT2:
             else:
                 x = self.conv_block(x, filters, kernel_size, name=name)
 
-        out = self.conv_block(x, 3, kernel_size, 'linear', name="output")
+        out = self.conv_block(x, 3, kernel_size, 'tanh', name="output")
 
         wct = Model(inputs=img, outputs=out, name='wct')
 

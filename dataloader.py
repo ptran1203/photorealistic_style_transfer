@@ -9,11 +9,17 @@ image_feature_description = {
     "image": tf.io.FixedLenFeature([], tf.string),
 }
 
+def _preprocess(image):
+    image = tf.keras.applications.vgg19.preprocess_input(image)
+
+    # Scaling to -1 1
+    image -= 127.5
+    image /= 127.5
+
+    return image
+
 def preprocess_input(x, y):
-    return (
-        tf.keras.applications.vgg19.preprocess_input(x),
-        tf.keras.applications.vgg19.preprocess_input(y),
-    )
+    return _preprocess(x), _preprocess(y)
 
 def decode_sample(example):
     sample = tf.io.parse_single_example(example, image_feature_description)
