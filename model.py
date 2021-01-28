@@ -303,6 +303,5 @@ class WCT2:
 
         self.final = get_predict_function(self.wct, ['output'], name='final')
 
-
     def generate(self, content_imgs, style_imgs):
         return self.wct.predict([content_imgs, style_imgs])

@@ -43,7 +43,7 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     return resized
 
 
-def display_outputs(content, style, output, figsize=(15, 8)):
+def display_outputs(content, style, output=None, figsize=(15, 8)):
     fig = plt.figure(figsize=figsize)
     plt.axis("off")
     fig.add_subplot(1, 2, 1)
@@ -52,5 +52,7 @@ def display_outputs(content, style, output, figsize=(15, 8)):
     fig.add_subplot(1, 2, 2)
     plt.imshow(style / 255.0)
     plt.show()
-    plt.imshow(output / 255.0)
-    plt.show()
+
+    if output is not None:
+        plt.imshow(output / 255.0)
+        plt.show()
