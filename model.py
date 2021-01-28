@@ -116,7 +116,7 @@ class WCT2:
             x = self.copy_layer(x, kernel_size, vgg_model, layer, name='_encode')
             if layer in {'block1_conv2', 'block2_conv2', 'block3_conv4'}:
                 to_append = [x]
-                x, lh, hl, hh= WaveLetPooling('wave_let_pooling_{}'.format(id_))(x)
+                x, lh, hl, hh = WaveLetPooling('wave_let_pooling_{}'.format(id_))(x)
                 to_append += [lh, hl, hh]
                 skips.append(to_append)
                 id_ += 1
@@ -143,16 +143,9 @@ class WCT2:
             if "_encode" in layer.name:
                 name = layer.name.replace("_encode", "")
                 layer.set_weights(vgg_model.get_layer(name).get_weights())
-                layer.trainable=False
+                layer.trainable = False
 
         return wct
-
-    @staticmethod
-    def init_hist():
-        return {
-            "loss": [],
-            "val_loss": []
-        }
 
     def get_callbacks(self):
         return [
@@ -169,12 +162,12 @@ class WCT2:
             )
         ]
 
-    def train(self, train_tfrec, val_tfrec, epochs=1, batch_size=4):
+    def train(self, train_tfrec, val_tfrec=None, epochs=1, batch_size=4):
         # HARDCODE train_size
         train_size = 10000
 
         train_data = build_input_pipe(train_tfrec, batch_size, preprocess_method="vgg19")
-        val_data =  build_input_pipe(val_tfrec, batch_size, preprocess_method="vgg19")
+        val_data = build_input_pipe(val_tfrec, batch_size, preprocess_method="vgg19") if val_tfrec else None
         steps_per_epoch = train_size // batch_size
 
         self.history = self.trainer.fit(
