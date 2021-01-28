@@ -29,7 +29,7 @@ def decode_sample(example):
 
     return image, image
 
-def build_input_pipe(tfrecord_file, batch_size=0, preprocess_method="vgg19"):
+def build_input_pipe(tfrecord_file, batch_size=0, preprocess_method="vgg19", repeat=False):
     dataset = tf.data.TFRecordDataset(tfrecord_file)
     dataset = dataset.map(decode_sample)
 
@@ -40,5 +40,10 @@ def build_input_pipe(tfrecord_file, batch_size=0, preprocess_method="vgg19"):
         preprocess_input,
         num_parallel_calls=AUTOTUNE
     )
+
+    if repeat:
+        dataset = dataset.repeat()
+
+    dataset = dataset.prefetch(AUTOTUNE)
 
     return dataset

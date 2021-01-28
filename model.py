@@ -166,7 +166,7 @@ class WCT2:
         # HARDCODE train_size
         train_size = 10000
 
-        train_data = build_input_pipe(train_tfrec, batch_size, preprocess_method="vgg19")
+        train_data = build_input_pipe(train_tfrec, batch_size, preprocess_method="vgg19", repeat=True)
         val_data = build_input_pipe(val_tfrec, batch_size, preprocess_method="vgg19") if val_tfrec else None
         steps_per_epoch = train_size // batch_size
 
