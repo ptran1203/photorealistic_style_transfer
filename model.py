@@ -16,13 +16,7 @@ from ops import (
     WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-
-try:
-    # In case run on google colab
-    from google.colab.patches import cv2_imshow
-except ImportError:
-    from cv2 import imshow as cv2_imshow
-
+from dataloader import build_input_pipe
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -33,25 +27,32 @@ VGG_LAYERS = [
 ]
 
 class WCT2:
-    def __init__(self, base_dir, rst, lr,
-                show_interval=25,
-                gram_loss_weight=1.0):
+    def __init__(
+        self,
+        image_size=256,
+        lr=1e-3,
+        show_interval=25,
+        gram_loss_weight=1.0,
+        checkpoint_path="wtc2.h5"
+    ):
         self.base_dir = base_dir
+        self.image_size = image_size
         self.rst = rst
         self.lr = lr
         self.show_interval = show_interval
-        self.img_shape = (self.rst, self.rst, 3)
+        self.img_shape = (self.image_size, self.image_size, 3)
+        self.checkpoint_path = checkpoint_path
+
         img = Input(self.img_shape)
         self.wct = self.build_wct_model()
         # ======= Loss functions ======= #
         recontruct_img = self.wct(img)
-        
+
         self.trainer = Model(inputs=[img], outputs=[recontruct_img], name="trainer")
         self.trainer.add_loss(gram_loss_weight * self.gram_loss(img, recontruct_img))
         self.trainer.compile(optimizer=Adam(self.lr), loss=["mse"])
 
         self.init_transfer_sequence()
-
 
     def gram_loss(self, img, gen_img):
         feat_gens = self.encoder(gen_img)
@@ -61,22 +62,19 @@ class WCT2:
         gram_in = [gram_matrix(f) for f in feats]
         num_style_layers = len(gram_gen)
         loss_list = [
-            K.mean(K.square(gram_gen[i] - gram_in[i])) \
-                for i in range(num_style_layers)
+            K.mean(K.square(gram_gen[i] - gram_in[i]))
+            for i in range(num_style_layers)
         ]
 
         gram_loss = TfReduceSum()(loss_list) / num_style_layers
         return gram_loss
 
+    def conv_block(self, x, filters, kernel_size, activation='relu', name=""):
+        x = Conv2D(
+            filters, kernel_size=kernel_size, strides=1,
+            padding='same', activation=activation, name=name)(x)
 
-    def conv_block(self, x, filters, kernel_size,
-                    activation='relu', name=""):
-
-        x = Conv2D(filters, kernel_size=kernel_size, strides=1,
-                    padding='same', activation=activation, name=name)(x)
         return x
-
-
 
     def copy_layer(self, x, kernel_size, model, layer, name):
         """
@@ -87,26 +85,28 @@ class WCT2:
         return self.conv_block(x, filters, kernel_size,
                                name=origin_layer.name + name)
 
-
-
     def build_wct_model(self):
         img = Input(self.img_shape, name='in_img')
         kernel_size = 3
         skips = []
 
         vgg_model = VGG19(include_top=False,
-                         weights='imagenet',
-                         input_tensor=Input(self.img_shape),
-                         input_shape=self.img_shape)
+                          weights='imagenet',
+                          input_tensor=Input(self.img_shape),
+                          input_shape=self.img_shape)
 
         vgg_model.trainable = False
         for layer in vgg_model.layers:
             layer.trainable = False
 
+        vgg_output = [
+            vgg_model.get_layer(f'block{i}_conv1'.get_output_at(0)
+            for i in {1, 2, 3, 4}
+        ]
+
         self.encoder = Model(inputs=vgg_model.inputs,
-                            outputs=[vgg_model.get_layer('block{}_conv1'.format(i)).get_output_at(0) \
-                                    for i in {1, 2, 3, 4}],
-                            name='encoder')
+                             outputs=vgg_output,
+                             name='encoder')
 
         # ======= Encoder ======= #
         id_ = 0
@@ -147,7 +147,6 @@ class WCT2:
 
         return wct
 
-
     @staticmethod
     def init_hist():
         return {
@@ -155,43 +154,36 @@ class WCT2:
             "val_loss": []
         }
 
+    def get_callbacks(self):
+        return [
+            tf.keras.callbacks.ModelCheckpoint(
+                filepath=self.checkpoint_path,
+                monitor="val_loss",
+                save_best_only=True,
+                save_weights_only=True,
+                verbose=1,
+            ),
+            tf.keras.callbacks.ReduceLROnPlateau(
+                monitor='val_loss', factor=0.1, patience=2, verbose=1,
+                mode='auto', min_delta=0.0001, cooldown=0, min_lr=0
+            )
+        ]
 
-    def train(self, data_gen, epochs):
-        history = self.init_hist()
-        print("Train on {} samples".format(len(data_gen.x)))
+    def train(self, train_tfrec, val_tfrec, epochs=1, batch_size=4):
+        # HARDCODE train_size
+        train_size = 10000
 
-        for e in range(epochs):
-            start_time = datetime.datetime.now()
-            print("Train epochs {}/{} - ".format(e + 1, epochs), end="")
+        train_data = build_input_pipe(train_tfrec, batch_size, preprocess_method="vgg19")
+        val_data =  build_input_pipe(val_tfrec, batch_size, preprocess_method="vgg19")
+        steps_per_epoch = train_size // batch_size
 
-            batch_loss = self.init_hist()
-            for content_img in data_gen.next_batch():
-                loss = self.trainer.train_on_batch([content_img], [content_img])
-                batch_loss['loss'].append(loss)
-
-            # evaluate
-            # batch_loss['val_loss'] = 
-
-            mean_loss = np.mean(np.array(batch_loss['loss']))
-            mean_val_loss = 0#np.mean(np.array(batch_loss['val_loss']))
-
-            history['loss'].append(mean_loss)
-            history['val_loss'].append(mean_val_loss)
-
-            print("Loss: {}, Val Loss: {} - {}".format(
-                mean_loss, mean_val_loss,
-                datetime.datetime.now() - start_time
-            ))
-
-            if e % self.show_interval == 0:
-                self.save_weight()
-                idx = np.random.randint(0, data_gen.max_size - 1)
-                img = data_gen.x[idx:idx+1]
-                gen_img = self.wct.predict(img)
-                data_gen.show_imgs(np.concatenate([img, gen_img]))
-
-        self.history = history
-
+        self.history = self.trainer.fit(
+            train_data,
+            validation_data=val_data,
+            epochs=epochs,
+            steps_per_epoch=steps_per_epoch,
+            callbacks=self.get_callbacks()
+        )
 
     def plot_history(self):
         plt.plot(self.history['loss'], label='train loss')
@@ -202,20 +194,17 @@ class WCT2:
         plt.legend()
         plt.show()
 
-
     def save_weight(self):
         try:
             self.wct.save_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
             print("Save model failed, {}".format(str(e)))
 
-
     def load_weight(self):
         try:
             self.wct.load_weights(self.base_dir + '/wct2.h5')
         except Exception as e:
             print("Could not load model, {}".format(str(e))) 
-
 
     def transfer(self, content_img, style_img, alpha=1.0):
         # ===== Encode ===== #
@@ -264,7 +253,6 @@ class WCT2:
         content_feat = self.final([content_feat])
 
         return content_feat.numpy()
-
 
     def init_transfer_sequence(self):
         # ===== encoder layers ===== #
@@ -317,27 +305,5 @@ class WCT2:
         self.final = get_predict_function(self.wct, ['output'], name='final')
 
 
-
     def generate(self, content_imgs, style_imgs):
         return self.wct.predict([content_imgs, style_imgs])
-
-
-    def show_sample(self, content_img, style_img,
-                    concate=True, denorm=True, deprocess=True):
-        gen_img = self.generate(content_img, style_img)
-
-        if concate:
-            return utils.show_images(np.concatenate([content_img, style_img, gen_img]), denorm, deprocess)
-
-        if denorm:
-            content_img = utils.de_norm(content_img)
-            style_img = utils.de_norm(style_img)
-            gen_img = utils.de_norm(gen_img)
-        if deprocess:
-            content_img = utils.deprocess(content_img)
-            style_img = utils.deprocess(style_img)
-            gen_img = utils.deprocess(gen_img)
-
-        cv2_imshow(content_img[0])
-        cv2_imshow(style_img[0])
-        cv2_imshow(gen_img[0])

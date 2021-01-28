@@ -4,6 +4,9 @@ import numpy as np
 import tensorflow.keras.backend as K
 
 class WaveLetPooling(tf.keras.layers.Layer):
+    """
+    Implemetation of Wavelet Pooing
+    """
     def __init__(self, name):
         super(WaveLetPooling, self).__init__()
         self._name = name
@@ -22,8 +25,6 @@ class WaveLetPooling(tf.keras.layers.Layer):
         self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
         self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
 
-
-
     def call(self, inputs):
         LL, LH, HL, HH = self.repeat_filters(inputs.shape[-1])
         return [_conv2d(inputs, LL),
@@ -31,15 +32,16 @@ class WaveLetPooling(tf.keras.layers.Layer):
                 _conv2d(inputs, HL),
                 _conv2d(inputs, HH)]
 
-
     def compute_output_shape(self, input_shape):
-        shape = (input_shape[0], input_shape[1]//2,
-                input_shape[2]//2, input_shape[3])
+        shape = (
+            input_shape[0], input_shape[1] // 2,
+            input_shape[2] // 2, input_shape[3]
+        )
 
         return [shape, shape, shape, shape]
 
-
     def repeat_filters(self, repeats):
+        # Can we optimize this?
         return [
             tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)),
             tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)),
@@ -49,6 +51,9 @@ class WaveLetPooling(tf.keras.layers.Layer):
 
 
 class WaveLetUnPooling(tf.keras.layers.Layer):
+    """
+    Implementation of WaveLet Unpooling
+    """
     def __init__(self, name):
         super(WaveLetUnPooling, self).__init__()
         self._name = name
@@ -67,7 +72,6 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
         self.HL = tf.reshape(tf.math.multiply(tf.transpose(H), L), (1, 2, 2, 1))
         self.HH = tf.reshape(tf.math.multiply(tf.transpose(H), H), (1, 2, 2, 1))
 
-
     def call(self, inputs):
         LL_in, LH_in, HL_in, HH_in, tensor_in = inputs
         LL, LH, HL, HH = self.repeat_filters(LL_in.shape[-1])
@@ -81,7 +85,6 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
             tensor_in,
         ], axis=-1)
 
-
     def compute_output_shape(self, input_shape):
         _ip_shape = input_shape[0]
         shape = (
@@ -93,8 +96,8 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
 
         return shape
 
-
     def repeat_filters(self, repeats):
+        # Can we optimize this?
         return [
             tf.transpose(tf.repeat(self.LL, repeats, axis=0), (1, 2, 3, 0)),
             tf.transpose(tf.repeat(self.LH, repeats, axis=0), (1, 2, 3, 0)),
@@ -104,21 +107,17 @@ class WaveLetUnPooling(tf.keras.layers.Layer):
 
 class WhiteningAndColoring(tf.keras.layers.Layer):
     """
-    https://github.com/eridgd/WCT-TF/blob/master/ops.py#L24
+    Source: https://github.com/eridgd/WCT-TF/blob/master/ops.py#L24
     """
     def __init__(self, alpha=1.0):
         super(WhiteningAndColoring, self).__init__()
         self.alpha = alpha
 
-
     def call(self, inputs):
-        """
-        Make it works first .
-        """
         content, style = inputs
         eps = 1e-8
         alpha = self.alpha
-        
+
         content_t = tf.transpose(tf.squeeze(content), (2, 0, 1))
         style_t = tf.transpose(tf.squeeze(style), (2, 0, 1))
 
@@ -126,21 +125,21 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         Cs, Hs, Ws = tf.unstack(tf.shape(style_t))
 
         # CxHxW -> CxH*W
-        content_flat = tf.reshape(content_t, (Cc, Hc*Wc))
-        style_flat = tf.reshape(style_t, (Cs, Hs*Ws))
+        content_flat = tf.reshape(content_t, (Cc, Hc * Wc))
+        style_flat = tf.reshape(style_t, (Cs, Hs * Ws))
 
         # Content covariance
         mc = tf.reduce_mean(content_flat, axis=1, keepdims=True)
         fc = content_flat - mc
-        fcfc = tf.matmul(fc, fc, transpose_b=True) / (tf.cast(Hc*Wc, tf.float32) - 1.) + tf.eye(Cc)*eps
+        fcfc = tf.matmul(fc, fc, transpose_b=True) / (tf.cast(Hc * Wc, tf.float32) - 1.) + tf.eye(Cc) * eps
 
         # Style covariance
         ms = tf.reduce_mean(style_flat, axis=1, keepdims=True)
         fs = style_flat - ms
-        fsfs = tf.matmul(fs, fs, transpose_b=True) / (tf.cast(Hs*Ws, tf.float32) - 1.) + tf.eye(Cs)*eps
+        fsfs = tf.matmul(fs, fs, transpose_b=True) / (tf.cast(Hs * Ws, tf.float32) - 1.) + tf.eye(Cs) * eps
 
         # tf.svd is slower on GPU, see https://github.com/tensorflow/tensorflow/issues/13603
-        with tf.device('/cpu:0'):  
+        with tf.device('/cpu:0'):
             Sc, Uc, _ = tf.linalg.svd(fcfc)
             Ss, Us, _ = tf.linalg.svd(fsfs)
 
@@ -151,11 +150,11 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         k_c, k_s = int(k_c), int(k_s)
         # Whiten content feature
         Dc = tf.linalg.diag(tf.pow(Sc[:k_c], -0.5))
-        fc_hat = tf.matmul(tf.matmul(tf.matmul(Uc[:,:k_c], Dc), Uc[:,:k_c], transpose_b=True), fc)
+        fc_hat = tf.matmul(tf.matmul(tf.matmul(Uc[:, : k_c], Dc), Uc[:, : k_c], transpose_b=True), fc)
 
         # Color content with style
         Ds = tf.linalg.diag(tf.pow(Ss[:k_s], 0.5))
-        fcs_hat = tf.matmul(tf.matmul(tf.matmul(Us[:,:k_s], Ds), Us[:,:k_s], transpose_b=True), fc_hat)
+        fcs_hat = tf.matmul(tf.matmul(tf.matmul(Us[:, : k_s], Ds), Us[:, : k_s], transpose_b=True), fc_hat)
 
         # Re-center with mean of style
         fcs_hat = fcs_hat + ms
@@ -164,9 +163,9 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         blended = alpha * fcs_hat + (1 - alpha) * (fc + mc)
 
         # CxH*W -> CxHxW
-        blended = tf.reshape(blended, (Cc,Hc,Wc))
+        blended = tf.reshape(blended, (Cc, Hc, Wc))
         # CxHxW -> 1xHxWxC
-        blended = tf.expand_dims(tf.transpose(blended, (1,2,0)), 0)
+        blended = tf.expand_dims(tf.transpose(blended, (1, 2, 0)), 0)
 
         return blended
 
@@ -227,10 +226,12 @@ def get_predict_function(model, layers, name):
         start = 0
 
     x, skips = _get_output(ip, model.get_layer(layers[start]))
+
     if skips is not None:
         skips_out = skips
-    for l in layers[start + 1:]:
-        x, skips = _get_output(x, model.get_layer(l))
+
+    for layer in layers[start + 1:]:
+        x, skips = _get_output(x, model.get_layer(layer))
         if skips is not None:
             skips_out = skips
 
@@ -241,5 +242,5 @@ def get_predict_function(model, layers, name):
 def gram_matrix(input_tensor):
     result = tf.linalg.einsum('bijc,bijd->bcd', input_tensor, input_tensor)
     input_shape = tf.shape(input_tensor)
-    num_locations = tf.cast(input_shape[1]*input_shape[2], tf.float32)
-    return result/(num_locations)
+    num_locations = tf.cast(input_shape[1] * input_shape[2], tf.float32)
+    return result / (num_locations)
