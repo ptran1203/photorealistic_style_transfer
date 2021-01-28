@@ -16,7 +16,7 @@ from ops import (
     WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-from data_processing import build_input_pipe, preprocess_image, restore_image, rescale
+from data_processing import build_input_pipe, preprocess_image, restore_image
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -251,7 +251,7 @@ class WCT2:
         # Deprocess output
         # output = restore_image(output)
 
-        return rescale(output) * 255.0
+        return output.clip(min=0, max=255.0)
 
     def init_transfer_sequence(self):
         # ===== encoder layers ===== #
