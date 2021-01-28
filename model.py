@@ -16,7 +16,7 @@ from ops import (
     WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-from data_processing import build_input_pipe, preprocess_image, restore_image
+from data_processing import build_input_pipe, preprocess_image, restore_image, rescale
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -201,8 +201,8 @@ class WCT2:
 
     def transfer(self, content_img, style_img, alpha=1.0):
         # Preprocess image
-        content_img = preprocess_image(content_img)
-        style_img = preprocess_image(content_img)
+        # content_img = preprocess_image(content_img)
+        # style_img = preprocess_image(content_img)
 
         # ===== Encode ===== #
         # step 1.
@@ -247,11 +247,11 @@ class WCT2:
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
 
         output = self.final([content_feat])
-
+        output = output.numpy()
         # Deprocess output
-        output = restore_image(output.numpy())
+        # output = restore_image(output)
 
-        return output
+        return rescale(output) * 255.0
 
     def init_transfer_sequence(self):
         # ===== encoder layers ===== #
