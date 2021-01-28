@@ -33,7 +33,7 @@ class WCT2:
         lr=1e-3,
         show_interval=25,
         gram_loss_weight=1.0,
-        checkpoint_path="wtc2.h5",
+        checkpoint_path="checkpoint/wtc2.h5",
         backbone_weight="imagenet",
     ):
         self.image_size = image_size
