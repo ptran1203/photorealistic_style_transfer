@@ -1,25 +1,39 @@
 import numpy as np
 import utils
 import tensorflow as tf
+from tensorflow.python.keras.applications import imagenet_utils
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
+
+MEAN_TENSOR = tf.constant([103.939, 116.779, 123.68], tf.float32)
+
 image_feature_description = {
     "image_id": tf.io.FixedLenFeature([], tf.string),
     "label": tf.io.FixedLenFeature([], tf.string),
     "image": tf.io.FixedLenFeature([], tf.string),
 }
 
-def _preprocess(image):
-    image = tf.keras.applications.vgg19.preprocess_input(image)
+def preprocess_image(x):
+    # https://www.tensorflow.org/api_docs/python/tf/keras/applications/vgg16/preprocess_input
+    x = imagenet_utils.preprocess_input(x, mode="caffe")
 
     # Scaling to -1 1
-    image -= 127.5
-    image /= 127.5
+    # x -= 127.5
+    # x /= 127.5
 
-    return image
+    return x
+
+def deprocess_image(x):
+    """
+    Custom implementation
+    https://github.com/tensorflow/tensorflow/blob/85c8b2a817f95a3e979ecd1ed95bff1dc1335cff/tensorflow/python/keras/applications/imagenet_utils.py#L242
+    """
+    x = x[..., ::-1]
+    return x
+
 
 def preprocess_input(x, y):
-    return _preprocess(x), _preprocess(y)
+    return preprocess_image(x), preprocess_image(y)
 
 def decode_sample(example):
     sample = tf.io.parse_single_example(example, image_feature_description)

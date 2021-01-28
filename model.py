@@ -16,7 +16,7 @@ from ops import (
     WaveLetPooling, WaveLetUnPooling, TfReduceSum,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-from dataloader import build_input_pipe
+from data_processing import build_input_pipe, preprocess_image, deprocess_image
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -134,7 +134,7 @@ class WCT2:
             else:
                 x = self.conv_block(x, filters, kernel_size, name=name)
 
-        out = self.conv_block(x, 3, kernel_size, 'tanh', name="output")
+        out = self.conv_block(x, 3, kernel_size, 'linear', name="output")
 
         wct = Model(inputs=img, outputs=out, name='wct')
 
@@ -200,6 +200,10 @@ class WCT2:
             print("Could not load model, {}".format(str(e))) 
 
     def transfer(self, content_img, style_img, alpha=1.0):
+        # Preprocess image
+        content_img = preprocess_image(content_img)
+        style_img = preprocess_image(content_img)
+
         # ===== Encode ===== #
         # step 1.
         content_feat, style_feat = self.en_1([content_img]), self.en_1([style_img])
@@ -242,10 +246,12 @@ class WCT2:
 
         content_feat = WhiteningAndColoring(alpha)([content_feat, style_feat])
 
+        output = self.final([content_feat])
 
-        content_feat = self.final([content_feat])
+        # Deprocess output
+        output = deprocess_image(output)
 
-        return content_feat.numpy()
+        return output
 
     def init_transfer_sequence(self):
         # ===== encoder layers ===== #
