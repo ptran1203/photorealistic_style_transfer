@@ -1,30 +1,7 @@
-import pickle
 import numpy as np
 import urllib.request
 import cv2
-
-MEAN_PIXCELS = np.array([103.939, 116.779, 123.68])
-
-def pickle_save(object, path, log=False):
-    try:
-        log and print('save data to {} successfully'.format(path))
-        with open(path, "wb") as f:
-            return pickle.dump(object, f)
-    except Exception as e:
-        log and print('save data to {} failed'.format(path))
-
-
-def pickle_load(path, log=False):
-    try:
-        log and print("Loading data from {} - ".format(path))
-        with open(path, "rb") as f:
-            data = pickle.load(f)
-            log and print("DONE")
-            return data
-    except Exception as e:
-        print(str(e))
-        return None
-
+import matplotlib.pyplot as plt
 
 def http_get_img(url, rst=64):
     req = urllib.request.urlopen(url)
@@ -64,3 +41,16 @@ def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
         dim = (width, int(h * r))
     resized = cv2.resize(image, dim, interpolation=inter)
     return resized
+
+
+def display_outputs(content, style, output, figsize=(15, 8)):
+    fig = plt.figure(figsize=figsize)
+    plt.axis("off")
+    fig.add_subplot(1, 2, 1)
+    plt.imshow(content / 255.0)
+
+    fig.add_subplot(1, 2, 2)
+    plt.imshow(style / 255.0)
+    plt.show()
+    plt.imshow(output / 255.0)
+    plt.show()
