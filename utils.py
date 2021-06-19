@@ -34,7 +34,7 @@ def get_local_img(path, rst=None):
     return img
 
 
-def git(path, rst, expand_dims=False):
+def read_img(path, rst, expand_dims=False):
     if any(path.startswith(prefix) for prefix in HTTP_PREFIXES):
         img = http_get_img(path, rst)
     else:
