@@ -9,6 +9,7 @@ def parse_args():
     parser.add_argument('--content', type=str)
     parser.add_argument('--style', type=str)
     parser.add_argument('--output', type=str)
+    parser.add_argument('--checkpoint', type=str, default='pretrained')
     parser.add_argument('--image-size', type=int, default=512)
 
     return parser.parse_args()
