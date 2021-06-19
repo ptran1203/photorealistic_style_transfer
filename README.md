@@ -12,7 +12,7 @@ Quick start in [colab](/WCT2.ipynb)
 
 ------
 
-1. ## Usage
+## 1. Usage
 
 ### 1.1 Download dataset
 
@@ -40,7 +40,7 @@ python3 train.py --train-tfrec tfrecords/train.tfrec\
 ```
 
 
-2. ## results
+## 2. Results
 
 | Content | Style | Result |
 |--|--|--|
