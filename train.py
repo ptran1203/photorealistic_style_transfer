@@ -1,4 +1,5 @@
 import argparse
+import os
 from model import WCT2
 
 def parse_args():
@@ -18,7 +19,10 @@ def main(args):
     model = WCT2(lr=args.lr, gram_loss_weight=1.0, checkpoint_path=args.checkpoint_path)
 
     if args.resume:
-        model.load_weight()
+        if os.path.isfile(args.checkpoint_path):
+            model.load_weight()
+        else:
+            model.load_weight('pretrained')
 
     model.train(args.train_tfrec, args.val_tfrec, epochs=args.epochs,
         batch_size=args.batch_size)

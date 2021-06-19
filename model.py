@@ -11,6 +11,7 @@ from ops import (
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
 from data_processing import build_input_pipe
+from utils import download_weight
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -184,6 +185,8 @@ class WCT2:
             print(f"Save model failed, {e}")
 
     def load_weight(self, weight=''):
+        if weight == 'pretrained':
+            weight = download_weight()
         try:
             self.wct.load_weights(weight or self.checkpoint_path)
         except Exception as e:
@@ -286,6 +289,3 @@ class WCT2:
             name='unpool_3')
 
         self.final = get_predict_function(self.wct, ['output'], name='final')
-
-    def generate(self, content_imgs, style_imgs):
-        return self.wct.predict([content_imgs, style_imgs])
