@@ -19,7 +19,7 @@ def main(args):
     model = WCT2(lr=args.lr, gram_loss_weight=1.0, checkpoint_path=args.checkpoint_path)
 
     if args.resume:
-        model.load_weight(model.checkpoint_path)
+        model.load_weight()
 
     model.train(args.train_tfrec, args.val_tfrec, epochs=args.epochs,
         batch_size=args.batch_size)

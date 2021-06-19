@@ -23,7 +23,7 @@ def main(args):
     content = read_img(args.content, args.image_size)
     style = read_img(args.style, args.image_size)
 
-    gen = model.transfer(content, style, 0.8)[0]
+    gen = model.transfer(content, style, 0.8)
     cv2.imwrite(args.output, gen[0] / 255.0)
 
 
