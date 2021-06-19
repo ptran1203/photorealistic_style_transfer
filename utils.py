@@ -34,14 +34,14 @@ def get_local_img(path, rst=None):
     return img
 
 
-def read_img(path, rst, expand_dims=False):
+def git(path, rst, expand_dims=False):
     if any(path.startswith(prefix) for prefix in HTTP_PREFIXES):
         img = http_get_img(path, rst)
     else:
         img = get_local_img(path, rst)
 
     if expand_dims:
-        img = np.expand_dims(expand_dims, 0)
+        img = np.expand_dims(img, 0)
 
     return img
 
