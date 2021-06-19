@@ -7,7 +7,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications.vgg19 import VGG19
 from ops import (
-    WaveLetPooling, WaveLetUnPooling
+    WaveLetPooling, WaveLetUnPooling,
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
 from data_processing import build_input_pipe
