@@ -2,6 +2,16 @@ import numpy as np
 import urllib.request
 import cv2
 import matplotlib.pyplot as plt
+import os
+import urllib.request
+from tqdm import tqdm
+
+HTTP_PREFIXES = [
+    'http',
+    'data:image/jpeg',
+]
+
+ASSET_HOST = 'https://github.com/ptran1203/photorealistic_style_transfer/releases/download/v1.0'
 
 def http_get_img(url, rst=64):
     req = urllib.request.urlopen(url)
@@ -56,3 +66,33 @@ def display_outputs(content, style, output=None, figsize=(15, 8)):
     if output is not None:
         plt.imshow(output / 255.0)
         plt.show()
+
+
+class DownloadProgressBar(tqdm):
+    '''
+    https://stackoverflow.com/questions/15644964/python-progress-bar-and-downloads
+    '''
+    def update_to(self, b=1, bsize=1, tsize=None):
+        if tsize is not None:
+            self.total = tsize
+        self.update(b * bsize - self.n)
+
+
+def download_weight():
+    '''
+    Download weight and save to local file
+    '''
+    filename = 'wtc2.h5'
+    os.makedirs('.cache', exist_ok=True)
+
+    url = f'{ASSET_HOST}/{filename}'
+    save_path = f'.cache/{filename}'
+
+    if os.path.isfile(save_path):
+        return save_path
+
+    desc = f'Downloading {url} to {save_path}'
+    with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=desc) as t:
+        urllib.request.urlretrieve(url, save_path, reporthook=t.update_to)
+
+    return save_path
