@@ -1,5 +1,7 @@
 import argparse
 import os
+import tensorflow as tf
+tf.get_logger().setLevel('ERROR')
 from model import WCT2
 
 def parse_args():
