@@ -1,22 +1,16 @@
 import tensorflow as tf
-import numpy as np
-import datetime
 import matplotlib.pyplot as plt
-import utils
 import tensorflow.keras.backend as K
 
-from tensorflow.keras.layers import (
-    Input, Activation, Layer,
-    UpSampling2D, Concatenate,
-    Add, Conv2D)
+from tensorflow.keras.layers import Input, Conv2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.applications.vgg19 import VGG19
 from ops import (
-    WaveLetPooling, WaveLetUnPooling, TfReduceSum,
+    WaveLetPooling, WaveLetUnPooling
     WhiteningAndColoring, get_predict_function,
     gram_matrix)
-from data_processing import build_input_pipe, preprocess_image, restore_image
+from data_processing import build_input_pipe
 
 VGG_LAYERS = [
     'block1_conv1', 'block1_conv2',
@@ -29,17 +23,15 @@ VGG_LAYERS = [
 class WCT2:
     def __init__(
         self,
-        image_size=256,
         lr=1e-3,
         show_interval=25,
         gram_loss_weight=1.0,
         checkpoint_path="checkpoints/wtc2.h5",
         backbone_weight="imagenet",
     ):
-        self.image_size = image_size
         self.lr = lr
         self.show_interval = show_interval
-        self.img_shape = (self.image_size, self.image_size, 3)
+        self.img_shape = (None, None, 3)
         self.checkpoint_path = checkpoint_path
         self.backbone_weight = backbone_weight
 
@@ -66,7 +58,7 @@ class WCT2:
             for i in range(num_style_layers)
         ]
 
-        gram_loss = TfReduceSum()(loss_list) / num_style_layers
+        gram_loss = tf.reduce_sum(loss_list) / num_style_layers
         return gram_loss
 
     def conv_block(self, x, filters, kernel_size, activation='relu', name=""):
@@ -166,8 +158,8 @@ class WCT2:
         # HARDCODE train_size
         train_size = 10000
 
-        train_data = build_input_pipe(train_tfrec, batch_size, preprocess_method="vgg19", repeat=True)
-        val_data = build_input_pipe(val_tfrec, batch_size, preprocess_method="vgg19") if val_tfrec else None
+        train_data = build_input_pipe(train_tfrec, batch_size, repeat=True)
+        val_data = build_input_pipe(val_tfrec, batch_size) if val_tfrec else None
         steps_per_epoch = train_size // batch_size
 
         self.history = self.trainer.fit(
@@ -191,19 +183,15 @@ class WCT2:
         try:
             self.wct.save_weights(self.checkpoint_path)
         except Exception as e:
-            print("Save model failed, {}".format(str(e)))
+            print(f"Save model failed, {e}")
 
     def load_weight(self):
         try:
             self.wct.load_weights(self.checkpoint_path)
         except Exception as e:
-            print("Could not load model, {}".format(str(e))) 
+            print(f"Could not load model, {e}") 
 
     def transfer(self, content_img, style_img, alpha=1.0):
-        # Preprocess image
-        # content_img = preprocess_image(content_img)
-        # style_img = preprocess_image(content_img)
-
         # ===== Encode ===== #
         # step 1.
         content_feat, style_feat = self.en_1([content_img]), self.en_1([style_img])
@@ -248,8 +236,6 @@ class WCT2:
 
         output = self.final([content_feat])
         output = output.numpy()
-        # Deprocess output
-        # output = restore_image(output)
 
         return output.clip(min=0, max=255.0)
 

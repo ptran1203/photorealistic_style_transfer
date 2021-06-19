@@ -170,14 +170,6 @@ class WhiteningAndColoring(tf.keras.layers.Layer):
         return blended
 
 
-class TfReduceSum(tf.keras.layers.Layer):
-    def __init__(self):
-        super(TfReduceSum, self).__init__()
-
-    def call(self, inputs):
-        return tf.reduce_sum(inputs)
-
-
 def _conv2d_transpose(x, kernel, output_shape):
     conv = tf.nn.conv2d_transpose(
             x, kernel,
