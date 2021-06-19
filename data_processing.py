@@ -21,7 +21,7 @@ def preprocess_input(x, y):
 
 def decode_sample(example):
     sample = tf.io.parse_single_example(example, image_feature_description)
-    image = tf.image.decode_jpeg(sample["image"], channels=3)
+    image = tf.image.decode_png(sample["image"], channels=3)
     image = tf.image.resize(image, (256, 256))
 
     return image, image
