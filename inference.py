@@ -52,9 +52,9 @@ def main(args):
     style_imgs = [args.style]
 
     if os.path.isdir(args.content):
-        content_imgs = glob.glob(args.content)
+        content_imgs = glob.glob(f'{args.content}/*')
     elif os.path.isdir(args.style):
-        style_imgs = glob.glob(args.style)
+        style_imgs = glob.glob(f'{args.style}/*')
 
     print(f'{len(content_imgs)} content images, {len(style_imgs)} style images')
 
