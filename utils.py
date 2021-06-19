@@ -22,7 +22,6 @@ def http_get_img(url, rst=64):
     if rst:
         img = image_resize(img, rst)
 
-    img = np.expand_dims(img, 0)
     return img
 
 
@@ -32,15 +31,19 @@ def get_local_img(path, rst=None):
     if rst:
         img = image_resize(img, rst)
 
-    img = np.expand_dims(img, 0)
     return img
 
 
-def read_img(path, rst):
+def read_img(path, rst, expand_dims=False):
     if any(path.startswith(prefix) for prefix in HTTP_PREFIXES):
-        return http_get_img(path, rst)
+        img = http_get_img(path, rst)
+    else:
+        img = get_local_img(path, rst)
 
-    return get_local_img(path, rst)
+    if expand_dims:
+        img = np.expand_dims(expand_dims, 0)
+
+    return img
 
 
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
