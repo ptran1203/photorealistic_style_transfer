@@ -36,6 +36,13 @@ def get_local_img(path, rst=None):
     return img
 
 
+def read_img(path, rst):
+    if any(path.startswith(prefix) for prefix in HTTP_PREFIXES):
+        return http_get_img(path, rst)
+
+    return get_local_img(path, rst)
+
+
 def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
     (h, w) = image.shape[:2]
