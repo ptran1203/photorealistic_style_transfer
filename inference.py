@@ -32,13 +32,8 @@ def check_path(args):
         not (is_c_dir and is_s_dir),
         f'Only one of content or style can be a directory, the other should be a file')
 
-    if not is_c_dir and not is_s_dir:
-        out_ext = args.output.split('.')[-1]
-        assert out_ext in VALID_EXTS, f'output must end with {VALID_EXTS}, got {out_ext}'
-    else:
-        # One is dir
-        assert not os.path.isfile(args.output), f'Output must be a directory'
-        os.makedirs(args.output, exist_ok=True)
+    assert not os.path.isfile(args.output), f'Output must be a directory'
+    os.makedirs(args.output, exist_ok=True)
 
 
 def main(args):
@@ -58,13 +53,15 @@ def main(args):
 
     print(f'{len(content_imgs)} content images, {len(style_imgs)} style images')
 
+    c = 0
     for cont in content_imgs:
         cont_img = read_img(cont, args.image_size, expand_dims=True)
         for sty in style_imgs:
             sty_img = read_img(sty, args.image_size, expand_dims=True)
             gen =  model.transfer(cont_img, sty_img, args.alpha)
-            if cv2.imwrite(args.output, gen[0][...,::-1]):
-                print(f'Saved image to {args.output}')
+            save_path = f'{args.output}_{c}.png'
+            if cv2.imwrite(save_path, gen[0][...,::-1]):
+                print(f'Saved image to {save_path}')
 
 
 if __name__ == '__main__':
