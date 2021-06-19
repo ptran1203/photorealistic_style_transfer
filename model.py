@@ -24,13 +24,11 @@ class WCT2:
     def __init__(
         self,
         lr=1e-3,
-        show_interval=25,
         gram_loss_weight=1.0,
         checkpoint_path="checkpoints/wtc2.h5",
         backbone_weight="imagenet",
     ):
         self.lr = lr
-        self.show_interval = show_interval
         self.img_shape = (None, None, 3)
         self.checkpoint_path = checkpoint_path
         self.backbone_weight = backbone_weight
