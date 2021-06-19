@@ -177,15 +177,15 @@ class WCT2:
         plt.legend()
         plt.show()
 
-    def save_weight(self):
+    def save_weight(self, weight):
         try:
-            self.wct.save_weights(self.checkpoint_path)
+            self.wct.save_weights(weight or self.checkpoint_path)
         except Exception as e:
             print(f"Save model failed, {e}")
 
-    def load_weight(self):
+    def load_weight(self, weight=''):
         try:
-            self.wct.load_weights(self.checkpoint_path)
+            self.wct.load_weights(weight or self.checkpoint_path)
         except Exception as e:
             print(f"Could not load model, {e}") 
 
