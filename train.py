@@ -8,7 +8,6 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--batch-size', type=int, default=6)
     parser.add_argument('--checkpoint-path', type=str, default='/content/checkpoints/wtc2.h')
-    parser.add_argument('--save-image-dir', type=str, default='/content/images')
     parser.add_argument('--resume', action='store_true')
     parser.add_argument('--lr', type=float, default=1e-4)
 
