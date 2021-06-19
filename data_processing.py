@@ -39,6 +39,8 @@ def build_input_pipe(tfrecord_file, batch_size=0, repeat=False):
         num_parallel_calls=AUTOTUNE
     )
 
+    dataset = dataset.apply(tf.data.experimental.ignore_errors())
+
     if repeat:
         dataset = dataset.repeat()
 
