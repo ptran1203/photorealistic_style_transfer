@@ -1,5 +1,5 @@
 import tensorflow as tf
-tf.get_logger().setLevel('ERROR')
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as K
 from tensorflow.keras.layers import Input, Conv2D
