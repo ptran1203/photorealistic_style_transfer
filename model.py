@@ -1,7 +1,7 @@
 import tensorflow as tf
+tf.get_logger().setLevel('ERROR')
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as K
-
 from tensorflow.keras.layers import Input, Conv2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
