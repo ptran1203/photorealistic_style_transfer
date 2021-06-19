@@ -7,7 +7,7 @@ def parse_args():
     parser.add_argument('--val-tfrec', type=str, default='')
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--batch-size', type=int, default=6)
-    parser.add_argument('--checkpoint-dir', type=str, default='/content/checkpoints')
+    parser.add_argument('--checkpoint-path', type=str, default='/content/checkpoints/wtc2.h')
     parser.add_argument('--save-image-dir', type=str, default='/content/images')
     parser.add_argument('--resume', type=str, default='False')
     parser.add_argument('--save-interval', type=int, default=1)
