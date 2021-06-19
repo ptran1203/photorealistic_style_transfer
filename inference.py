@@ -62,6 +62,7 @@ def main(args):
             save_path = f'{args.output}_{c}.png'
             if cv2.imwrite(save_path, gen[0][...,::-1]):
                 print(f'Saved image to {save_path}')
+                c += 1
 
 
 if __name__ == '__main__':
