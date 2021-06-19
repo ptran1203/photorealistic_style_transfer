@@ -12,7 +12,35 @@ Quick start in [colab](/WCT2.ipynb)
 
 ------
 
-#### results
+1. ## Usage
+
+### 1.1 Download dataset
+
+```
+wget -O https://github.com/ptran1203/photorealistic_style_transfer/releases/download/v1.0/tfrecords.zip
+unzip tfrecords.zip
+```
+
+### 1.2 Train
+
+```
+python3 train.py --train-tfrec tfrecords/train.tfrec\
+                 --epochs 10
+                 --batch-size 8
+                 --checkpoint-path /content/ckp/wtc2.h5     # Save to this path
+                 --resume                                   # Continue training
+                 --lr 1e-4
+```
+### 1.3 Inference
+
+```
+!python3 inference.py --content /content/photorealistic_style_transfer/examples/input/in21.png\
+                    --style /content/photorealistic_style_transfer/examples/style\
+                    --output /content/tests
+```
+
+
+2. ## results
 
 | Content | Style | Result |
 |--|--|--|

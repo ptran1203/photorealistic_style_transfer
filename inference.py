@@ -59,7 +59,7 @@ def main(args):
         for sty in style_imgs:
             sty_img = read_img(sty, args.image_size, expand_dims=True)
             gen =  model.transfer(cont_img, sty_img, args.alpha)
-            save_path = f'{args.output}_{c}.png'
+            save_path = f'{args.output}/gen_{c}.png'
             if cv2.imwrite(save_path, gen[0][...,::-1]):
                 print(f'Saved image to {save_path}')
                 c += 1
