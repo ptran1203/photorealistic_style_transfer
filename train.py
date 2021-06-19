@@ -9,7 +9,7 @@ def parse_args():
     parser.add_argument('--batch-size', type=int, default=6)
     parser.add_argument('--checkpoint-path', type=str, default='/content/checkpoints/wtc2.h')
     parser.add_argument('--save-image-dir', type=str, default='/content/images')
-    parser.add_argument('--resume', type=str, default='False')
+    parser.add_argument('--resume', action='store_true')
     parser.add_argument('--lr', type=float, default=1e-4)
 
     return parser.parse_args()
@@ -18,7 +18,9 @@ def parse_args():
 def main(args):
     model = WCT2(lr=args.lr, gram_loss_weight=1.0, checkpoint_path=args.checkpoint_path)
 
-    model.wct.load_weights(model.checkpoint_path)
+    if args.resume:
+        model.load_weight(model.checkpoint_path)
+
     model.train(args.train_tfrec, args.val_tfrec, epochs=args.epochs,
         batch_size=args.batch_size)
 
