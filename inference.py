@@ -1,5 +1,6 @@
 import argparse
 import cv2
+from tensorflow.python.ops.gen_array_ops import expand_dims
 from model import WCT2
 from utils import read_img, download_weight
 
@@ -20,11 +21,11 @@ def main(args):
     weight = download_weight() if args.checkpoint == 'pretrained' else args.checkpoint
     model.load_weight(weight)
 
-    content = read_img(args.content, args.image_size)
-    style = read_img(args.style, args.image_size)
+    content = read_img(args.content, args.image_size, expand_dims=True)
+    style = read_img(args.style, args.image_size, expand_dims=True)
 
     gen = model.transfer(content, style, 0.8)
-    cv2.imwrite(args.output, gen[0] / 255.0)
+    cv2.imwrite(args.output, gen[0][...,::-1])
 
 
 if __name__ == '__main__':
