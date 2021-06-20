@@ -16,6 +16,8 @@ def parse_args():
 
 
 def main(args):
+    checkpoint_dir = '/'.join(args.checkpoint_path.split('/')[:-1])
+    os.makedirs(checkpoint_dir, exist_ok=True)
     model = WCT2(lr=args.lr, gram_loss_weight=1.0, checkpoint_path=args.checkpoint_path)
 
     if args.resume:
