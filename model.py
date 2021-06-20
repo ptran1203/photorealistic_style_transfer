@@ -34,12 +34,7 @@ class WCT2:
 
         img = Input(self.img_shape)
         self.wct = self.build_wct_model()
-        # ======= Loss functions ======= #
-        recontruct_img = self.wct(img)
-
-        self.trainer = Model(inputs=[img], outputs=[recontruct_img], name="trainer")
-        self.trainer.add_loss(gram_loss_weight * self.gram_loss(img, recontruct_img))
-        self.trainer.compile(optimizer=Adam(self.lr), loss=["mse"])
+        self.wct.compile(optimizer=Adam(self.lr), loss=["mse", self.gram_loss])
 
         self.init_transfer_sequence()
 
@@ -142,7 +137,6 @@ class WCT2:
                 filepath=self.checkpoint_path,
                 monitor="val_loss",
                 save_best_only=True,
-                save_weights_only=True,
                 verbose=1,
             ),
             tf.keras.callbacks.ReduceLROnPlateau(
@@ -159,7 +153,7 @@ class WCT2:
         val_data = build_input_pipe(val_tfrec, batch_size) if val_tfrec else None
         steps_per_epoch = train_size // batch_size
 
-        self.history = self.trainer.fit(
+        self.history = self.wct.fit(
             train_data,
             validation_data=val_data,
             epochs=epochs,
